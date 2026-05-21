@@ -27,6 +27,43 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Generate placeholder icons (if not present)
+        run: |
+          python3 - << 'EOF'
+          import struct, zlib, os
+          def make_png(size, bg, fg):
+              w = h = size
+              cx, cy = w//2, h//2
+              def in_mark(x, y):
+                  dl, dr, dt, db = cx-w//5, cx-w//20, cy-h//5, cy+h//5
+                  if dl<=x<=dr and dt<=y<=db: return True
+                  sl, sr = cx+w//20, cx+w//5
+                  sh = (db-dt)//5
+                  for s in (0,2,4):
+                      sy = dt+s*sh
+                      if sl<=x<=sr and sy<=y<=sy+sh: return True
+                  return False
+              rows = []
+              for y in range(h):
+                  row = []
+                  for x in range(w):
+                      row += list(fg if in_mark(x,y) else bg)
+                  rows.append(bytes(row))
+              def chunk(name, data):
+                  c = name+data
+                  return struct.pack('>I',len(data))+c+struct.pack('>I',zlib.crc32(c)&0xffffffff)
+              ihdr = struct.pack('>IIBBBBB',w,h,8,2,0,0,0)
+              raw = b''.join(b'\x00'+r for r in rows)
+              return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',ihdr)+chunk(b'IDAT',zlib.compress(raw))+chunk(b'IEND',b'')
+          bg=(44,26,10); fg=(212,175,55)
+          for sz,name in [(192,'public/icon-192.png'),(512,'public/icon-512.png')]:
+              if not os.path.exists(name):
+                  open(name,'wb').write(make_png(sz,bg,fg))
+                  print(f'Generated {name}')
+              else:
+                  print(f'Kept existing {name}')
+          EOF
+
       - name: Install dependencies
         run: npm install
 
