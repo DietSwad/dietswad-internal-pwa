@@ -30,13 +30,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-linen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      <main className="w-full max-w-sm bg-linen">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-espresso rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md">
             <span className="text-gold font-bold text-xl tracking-tight">DS</span>
           </div>
           <h1 className="text-2xl font-bold text-ink">Diet Swad</h1>
-          <p className="text-sm text-ink/50 mt-1">Team Dashboard — Internal Access</p>
+          <p className="text-sm text-ink/70 mt-1">Team Dashboard — Internal Access</p>
         </div>
         <div className="bg-cream rounded-2xl shadow-lg p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -53,7 +53,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 disabled={loading}
                 placeholder="Enter team password"
-                className="w-full px-4 py-3 rounded-xl border border-surface bg-white text-ink focus:outline-none focus:ring-2 focus:ring-gold/60 focus:border-gold placeholder:text-ink/30 disabled:opacity-60 transition-colors"
+                className="w-full px-4 py-3 rounded-xl border border-surface bg-white text-ink focus:outline-none focus:ring-2 focus:ring-gold/60 focus:border-gold placeholder:text-ink/40 disabled:opacity-60 transition-colors"
               />
             </div>
             {error && (
@@ -70,8 +70,8 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
-        <p className="text-center text-xs text-ink/30 mt-6">Radiant Twins Enterprise · Internal use only</p>
-      </div>
+        <p className="text-center text-xs text-ink/80 mt-6">Radiant Twins Enterprise · Internal use only</p>
+      </main>
     </div>
   )
 }
