@@ -1,12 +1,21 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute } from 'workbox-precaching'
-import { registerRoute } from 'workbox-routing'
+import { precacheAndRoute, matchPrecache } from 'workbox-precaching'
+import { registerRoute, setCatchHandler } from 'workbox-routing'
 import { NetworkFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 
 declare const self: ServiceWorkerGlobalScope
 
 precacheAndRoute(self.__WB_MANIFEST)
+
+// Return offline.html for navigation requests when both network and cache fail
+setCatchHandler(async ({ request }) => {
+  if (request.destination === 'document') {
+    const cached = await matchPrecache('/offline.html')
+    return cached ?? Response.error()
+  }
+  return Response.error()
+})
 
 registerRoute(
   ({ url }) =>
