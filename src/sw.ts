@@ -6,6 +6,11 @@ import { ExpirationPlugin } from 'workbox-expiration'
 
 declare const self: ServiceWorkerGlobalScope
 
+// Required by vite-plugin-pwa autoUpdate: lets the plugin signal immediate SW activation
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+})
+
 precacheAndRoute(self.__WB_MANIFEST)
 
 // Return offline.html for navigation requests when both network and cache fail
