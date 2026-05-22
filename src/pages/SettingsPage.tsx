@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ExternalLink } from 'lucide-react'
 import Nav from '../components/Nav'
 import { useToast } from '../components/ToastProvider'
+import { usePush } from '../hooks/usePush'
 import {
   getSettings,
   saveSettings,
@@ -16,6 +17,7 @@ const APP_VERSION = '2.0.0'
 
 export default function SettingsPage() {
   const toast = useToast()
+  const { subscription, isSupported: pushSupported, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePush()
   const [settings, setSettings] = useState<Settings>(getSettings)
   const [urlErrors, setUrlErrors] = useState<Record<string, boolean>>({})
 
@@ -145,16 +147,19 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-ink">Push notifications</p>
-              <p className="text-xs text-ink/40">Full setup in Session 3</p>
+              <p className="text-xs text-ink/40">
+                {!pushSupported ? 'Not supported in this browser' : subscription ? 'Subscribed on this device' : 'Enable order alerts'}
+              </p>
             </div>
             <button
               type="button"
-              onClick={() => update('pushEnabled', !settings.pushEnabled)}
-              className={`relative inline-flex w-10 h-6 rounded-full transition-colors ${settings.pushEnabled ? 'bg-gold' : 'bg-surface'}`}
+              disabled={!pushSupported}
+              onClick={() => (subscription ? pushUnsubscribe() : pushSubscribe())}
+              className={`relative inline-flex w-10 h-6 rounded-full transition-colors disabled:opacity-40 ${subscription ? 'bg-gold' : 'bg-surface'}`}
               role="switch"
-              aria-checked={settings.pushEnabled}
+              aria-checked={!!subscription}
             >
-              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${settings.pushEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${subscription ? 'translate-x-5' : 'translate-x-1'}`} />
             </button>
           </div>
           <Link to="/settings/utm-summary" className="flex items-center gap-1.5 text-sm text-espresso hover:underline">

@@ -34,3 +34,17 @@ export const CsvRowSchema = z.object({
 })
 
 export type CsvRow = z.infer<typeof CsvRowSchema>
+
+export const ShortenUrlSchema = z.object({
+  long_url: z.string().url('Enter a valid URL (include https://)'),
+  custom_code: z
+    .string()
+    .regex(/^[a-z0-9-]{2,30}$/, 'Use 2–30 lowercase letters, numbers, or hyphens')
+    .optional()
+    .or(z.literal('')),
+  utm_source: z.string().optional(),
+  utm_medium: z.string().optional(),
+  utm_campaign: z.string().optional(),
+})
+
+export type ShortenUrlFormValues = z.infer<typeof ShortenUrlSchema>

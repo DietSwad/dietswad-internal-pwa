@@ -3,15 +3,23 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import RequireAuth from './components/RequireAuth'
 import InstallPrompt from './components/InstallPrompt'
+import PushPermissionPrompt from './components/PushPermissionPrompt'
 import { ToastProvider } from './components/ToastProvider'
 import LoginPage from './auth/LoginPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
 
-// Stubs (Session 3+)
-import DashboardsPage from './pages/stubs/DashboardsPage'
-import ShortenerPage from './pages/stubs/ShortenerPage'
+// Stubs
 import ProductsPage from './pages/stubs/ProductsPage'
+
+// Session 3 pages — code-split
+const DashboardsPage = lazy(() => import('./pages/DashboardsPage'))
+
+// Shortener — code-split
+const ShortenerListPage     = lazy(() => import('./pages/shortener/ShortenerListPage'))
+const ShortenerNewPage      = lazy(() => import('./pages/shortener/ShortenerNewPage'))
+const ShortenerDetailPage   = lazy(() => import('./pages/shortener/ShortenerDetailPage'))
+const ShortenerChannelsPage = lazy(() => import('./pages/shortener/ShortenerChannelsPage'))
 
 // Session 2 pages — code-split
 const OrdersListPage   = lazy(() => import('./pages/OrdersListPage'))
@@ -36,6 +44,7 @@ export default function App() {
     <AuthProvider>
       <ToastProvider>
         <InstallPrompt />
+        <PushPermissionPrompt />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public */}
@@ -62,8 +71,13 @@ export default function App() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/utm-summary" element={<UtmSummaryPage />} />
 
+              {/* Shortener */}
+              <Route path="/shortener" element={<ShortenerListPage />} />
+              <Route path="/shortener/new" element={<ShortenerNewPage />} />
+              <Route path="/shortener/channels" element={<ShortenerChannelsPage />} />
+              <Route path="/shortener/:code" element={<ShortenerDetailPage />} />
+
               {/* Session 3+ stubs */}
-              <Route path="/shortener/*" element={<ShortenerPage />} />
               <Route path="/products" element={<ProductsPage />} />
             </Route>
 
