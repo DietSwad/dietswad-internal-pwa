@@ -128,10 +128,10 @@ export async function createManualOrder(
   return { order_id: data.order_id }
 }
 
-export async function sendInvoice(orderId: string): Promise<string> {
+export async function sendInvoice(pageId: string): Promise<string> {
   const { data } = await apiClient.post<{ success: boolean; invoice_number: string }>(
     '/send-invoice',
-    { order_id: orderId }
+    { page_id: pageId }
   )
   return data.invoice_number
 }
