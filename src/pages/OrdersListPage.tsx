@@ -6,7 +6,7 @@ import FilterBar from '../components/FilterBar'
 import OrderCard from '../components/OrderCard'
 import StatusBadge from '../components/StatusBadge'
 import { useOrdersList } from '../hooks/useOrders'
-import { formatINR, formatDate } from '../utils/format'
+import { formatINR, formatDate, todayIstIso } from '../utils/format'
 import { type OrderFilters } from '../api/orders'
 
 export default function OrdersListPage() {
@@ -20,6 +20,18 @@ export default function OrdersListPage() {
   }, [filters])
 
   const { data: orders = [], isLoading, isError } = useOrdersList(apiFilters)
+
+  // Today's summary — computed from all loaded orders (not filtered by search)
+  const todaySummary = useMemo(() => {
+    const today = todayIstIso()
+    const todayOrders = orders.filter((o) => o.orderDate === today)
+    return {
+      count: todayOrders.length,
+      revenue: todayOrders.filter((o) => o.payment === 'Paid').reduce((s, o) => s + o.amount, 0),
+      pending: todayOrders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length,
+      codPending: todayOrders.filter((o) => o.payment === 'COD' || o.payment === 'Not Paid').length,
+    }
+  }, [orders])
 
   // Client-side search filter (name, phone, orderId)
   const displayed = useMemo(() => {
@@ -38,6 +50,21 @@ export default function OrdersListPage() {
       <Nav title="Orders" />
 
       <main className="max-w-4xl mx-auto px-4 py-5">
+        {/* Today's summary strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          {[
+            { label: 'Orders today', value: todaySummary.count },
+            { label: 'Revenue today', value: formatINR(todaySummary.revenue) },
+            { label: 'Pending today', value: todaySummary.pending },
+            { label: 'COD pending', value: todaySummary.codPending },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-cream rounded-xl border border-surface p-3">
+              <p className="text-xs text-ink/40">{label}</p>
+              <p className="text-lg font-semibold text-ink mt-0.5">{value}</p>
+            </div>
+          ))}
+        </div>
+
         <FilterBar filters={filters} onChange={setFilters} />
 
         {isLoading && (

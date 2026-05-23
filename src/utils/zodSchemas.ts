@@ -15,10 +15,23 @@ export const ManualOrderSchema = z.object({
       z.object({
         product: z.string().min(1, 'Select a product'),
         quantity: z.coerce.number().int().min(1, 'Min quantity is 1'),
-        unit_price: z.number().min(0).optional(),
+        unit_price: z.coerce.number().min(0, 'Price must be 0 or more'),
+        custom_name: z.string().max(120).optional(),
       })
     )
-    .min(1, 'Add at least one product'),
+    .min(1, 'Add at least one product')
+    .superRefine((items, ctx) => {
+      const customProducts = new Set(['Custom Order', 'Gift Hampers'])
+      items.forEach((item, i) => {
+        if (customProducts.has(item.product) && !item.custom_name?.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Custom product name is required',
+            path: [i, 'custom_name'],
+          })
+        }
+      })
+    }),
 })
 
 export type ManualOrderFormValues = z.infer<typeof ManualOrderSchema>

@@ -32,14 +32,16 @@ export default function ManualOrderPage() {
     defaultValues: {
       payment_method: 'UPI',
       payment_status: 'Not Paid',
-      items: [{ product: '', quantity: 1 }],
+      items: [{ product: '', quantity: 1, unit_price: 0 }],
     },
   })
 
   const items = watch('items')
 
+  const CUSTOM_PRODUCTS = new Set(['Custom Order', 'Gift Hampers'])
+
   function addItem() {
-    setValue('items', [...items, { product: '', quantity: 1 }])
+    setValue('items', [...items, { product: '', quantity: 1, unit_price: 0 }])
   }
   function removeItem(idx: number) {
     setValue('items', items.filter((_, i) => i !== idx))
@@ -47,14 +49,11 @@ export default function ManualOrderPage() {
 
   async function onSubmit(values: ManualOrderFormValues) {
     try {
-      const mappedItems = values.items.map((item) => {
-        const catalog = products.find((p) => p.name === item.product)
-        return { product: item.product, quantity: item.quantity, unit_price: catalog?.price ?? 499 }
-      })
+      const total = values.items.reduce((s, i) => s + i.unit_price * i.quantity, 0)
       const result = await createOrder.mutateAsync({
         ...values,
         order_type: 'Manual',
-        items: mappedItems,
+        total_amount: total,
       })
       setConfirmedOrderId(result.order_id)
     } catch {
@@ -144,38 +143,74 @@ export default function ManualOrderPage() {
           {/* Products */}
           <section className="bg-cream rounded-xl border border-surface p-4 space-y-3">
             <h3 className="text-xs font-semibold text-ink/50 uppercase tracking-wide">Products</h3>
-            {items.map((_, idx) => (
-              <div key={idx} className="flex gap-2 items-start">
-                <div className="flex-1 min-w-0">
-                  <select {...register(`items.${idx}.product`)} className="input-field w-full">
-                    <option value="">Select product</option>
-                    {products.map((p) => (
-                      <option key={p.name} value={p.name}>
-                        {p.name} — {formatINR(p.price)}
-                      </option>
-                    ))}
-                  </select>
-                  {(errors.items as { [k: number]: { product?: { message?: string } } })?.[idx]?.product && (
-                    <p className="text-xs text-red-600 mt-0.5">
-                      {(errors.items as { [k: number]: { product?: { message?: string } } })[idx].product?.message}
-                    </p>
+            {items.map((item, idx) => (
+              <div key={idx} className="space-y-2">
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 min-w-0">
+                    <select
+                      {...register(`items.${idx}.product`)}
+                      className="input-field w-full"
+                      onChange={(e) => {
+                        const name = e.target.value
+                        setValue(`items.${idx}.product`, name)
+                        const catalog = products.find((p) => p.name === name)
+                        setValue(`items.${idx}.unit_price`, catalog?.price ?? 0)
+                        if (!CUSTOM_PRODUCTS.has(name)) setValue(`items.${idx}.custom_name`, '')
+                      }}
+                    >
+                      <option value="">Select product</option>
+                      {products.map((p) => (
+                        <option key={p.name} value={p.name}>
+                          {p.name}{p.price > 0 ? ` — ${formatINR(p.price)}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                    {(errors.items as { [k: number]: { product?: { message?: string } } })?.[idx]?.product && (
+                      <p className="text-xs text-red-600 mt-0.5">
+                        {(errors.items as { [k: number]: { product?: { message?: string } } })[idx].product?.message}
+                      </p>
+                    )}
+                  </div>
+                  <input
+                    {...register(`items.${idx}.quantity`, { valueAsNumber: true })}
+                    type="number"
+                    min={1}
+                    className="input-field w-16 text-center"
+                    placeholder="Qty"
+                  />
+                  <div className="flex-shrink-0 relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-ink/40 text-sm">₹</span>
+                    <input
+                      {...register(`items.${idx}.unit_price`, { valueAsNumber: true })}
+                      type="number"
+                      min={0}
+                      className="input-field w-24 pl-5"
+                      placeholder="Price"
+                    />
+                  </div>
+                  {items.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                      className="text-red-400 hover:text-red-600 p-2 flex-shrink-0"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   )}
                 </div>
-                <input
-                  {...register(`items.${idx}.quantity`, { valueAsNumber: true })}
-                  type="number"
-                  min={1}
-                  className="input-field w-16 text-center"
-                  placeholder="Qty"
-                />
-                {items.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem(idx)}
-                    className="text-red-400 hover:text-red-600 p-2 flex-shrink-0"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                {CUSTOM_PRODUCTS.has(item.product) && (
+                  <div>
+                    <input
+                      {...register(`items.${idx}.custom_name`)}
+                      placeholder="Custom product name *"
+                      className="input-field w-full"
+                    />
+                    {(errors.items as { [k: number]: { custom_name?: { message?: string } } })?.[idx]?.custom_name && (
+                      <p className="text-xs text-red-600 mt-0.5">
+                        {(errors.items as { [k: number]: { custom_name?: { message?: string } } })[idx].custom_name?.message}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             ))}

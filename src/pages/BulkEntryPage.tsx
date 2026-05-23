@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { ChevronLeft, Plus, Trash2, Upload } from 'lucide-react'
 import Nav from '../components/Nav'
 import { useCreateManualOrder } from '../hooks/useOrders'
+import { sendInvoiceByOrderId } from '../api/orders'
 import { useProducts } from '../hooks/useProducts'
 import { useToast } from '../components/ToastProvider'
 import { CsvRowSchema, type CsvRow } from '../utils/zodSchemas'
@@ -16,6 +17,7 @@ type TabId = 'single' | 'csv'
 interface SingleForm {
   customer_name: string
   phone: string
+  email?: string
   address: string
   pincode: string
   distributor_name?: string
@@ -25,12 +27,15 @@ interface SingleForm {
   items: Array<{ product: string; quantity: number }>
 }
 
-function SingleCustomerTab() {
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+
+function SingleCustomerTab({ autoSendInvoice }: { autoSendInvoice: boolean }) {
   const navigate = useNavigate()
   const toast = useToast()
   const { data: products = [] } = useProducts()
   const createOrder = useCreateManualOrder()
   const [done, setDone] = useState<string | null>(null)
+  const [invoiceSent, setInvoiceSent] = useState(false)
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<SingleForm>({
     defaultValues: {
@@ -59,6 +64,15 @@ function SingleCustomerTab() {
         total_amount: total,
       })
       setDone(result.order_id)
+      setInvoiceSent(false)
+      if (autoSendInvoice && values.email && EMAIL_RE.test(values.email)) {
+        try {
+          await sendInvoiceByOrderId(result.order_id)
+          setInvoiceSent(true)
+        } catch {
+          toast.error('Order created — invoice failed to send')
+        }
+      }
     } catch {
       toast.error('Failed to create order')
     }
@@ -69,8 +83,11 @@ function SingleCustomerTab() {
       <div className="py-12 text-center">
         <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600 text-xl">✓</div>
         <p className="font-bold text-ink text-lg">Order Created</p>
-        <p className="font-mono text-sm text-ink/50 bg-surface px-4 py-2 rounded-lg inline-block mt-2 mb-6">{done}</p>
-        <div className="flex gap-3 justify-center">
+        <p className="font-mono text-sm text-ink/50 bg-surface px-4 py-2 rounded-lg inline-block mt-2">{done}</p>
+        {invoiceSent && (
+          <p className="text-xs text-green-600 mt-2">Invoice sent</p>
+        )}
+        <div className="flex gap-3 justify-center mt-6">
           <button onClick={() => navigate('/orders')} className="px-5 py-2 bg-espresso text-on-dark rounded-xl text-sm font-semibold">View Orders</button>
           <button onClick={() => setDone(null)} className="px-5 py-2 bg-surface text-ink rounded-xl text-sm font-semibold">New Entry</button>
         </div>
@@ -93,6 +110,7 @@ function SingleCustomerTab() {
           </div>
           <input {...register('address', { required: true })} placeholder="Address *" className="input-field w-full sm:col-span-2" />
           <input {...register('pincode', { required: true, pattern: /^\d{6}$/ })} placeholder="Pincode *" inputMode="numeric" className="input-field w-full" />
+          <input {...register('email')} placeholder="Email (for invoice)" type="email" className="input-field w-full" />
           <input {...register('distributor_name')} placeholder="Distributor name (optional)" className="input-field w-full" />
         </div>
       </section>
@@ -372,6 +390,7 @@ function CsvBatchTab() {
 export default function BulkEntryPage() {
   const navigate = useNavigate()
   const [tab, setTab] = useState<TabId>('single')
+  const [autoSendInvoice, setAutoSendInvoice] = useState(true)
 
   return (
     <div className="min-h-dvh bg-linen">
@@ -381,21 +400,32 @@ export default function BulkEntryPage() {
           <ChevronLeft size={16} /> Back
         </button>
 
-        <div className="flex gap-1 bg-surface p-1 rounded-xl mb-5 w-fit">
-          {(['single', 'csv'] as TabId[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                tab === t ? 'bg-cream text-ink shadow-sm' : 'text-ink/50 hover:text-ink'
-              }`}
-            >
-              {t === 'single' ? 'Single Customer' : 'CSV Batch'}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div className="flex gap-1 bg-surface p-1 rounded-xl w-fit">
+            {(['single', 'csv'] as TabId[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  tab === t ? 'bg-cream text-ink shadow-sm' : 'text-ink/50 hover:text-ink'
+                }`}
+              >
+                {t === 'single' ? 'Single Customer' : 'CSV Batch'}
+              </button>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={autoSendInvoice}
+              onChange={(e) => setAutoSendInvoice(e.target.checked)}
+              className="w-4 h-4 accent-espresso"
+            />
+            <span className="text-xs text-ink/60">Auto-send invoice when email provided</span>
+          </label>
         </div>
 
-        {tab === 'single' ? <SingleCustomerTab /> : <CsvBatchTab />}
+        {tab === 'single' ? <SingleCustomerTab autoSendInvoice={autoSendInvoice} /> : <CsvBatchTab />}
       </main>
     </div>
   )

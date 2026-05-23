@@ -31,8 +31,9 @@ export async function shortenUrl(payload: ShortenPayload): Promise<ShortUrl> {
 }
 
 export async function listShortUrls(): Promise<ShortUrl[]> {
-  const { data } = await apiClient.get<ShortUrl[]>('/shortener/urls')
-  return Array.isArray(data) ? data : []
+  const { data } = await apiClient.get<{ urls?: ShortUrl[] } | ShortUrl[]>('/shortener/urls')
+  if (Array.isArray(data)) return data
+  return Array.isArray((data as { urls?: ShortUrl[] }).urls) ? (data as { urls: ShortUrl[] }).urls : []
 }
 
 export async function getShortUrl(code: string): Promise<ShortUrl> {

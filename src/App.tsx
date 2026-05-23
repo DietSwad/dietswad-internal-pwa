@@ -9,10 +9,8 @@ import LoginPage from './auth/LoginPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
 
-// Stubs
-import ProductsPage from './pages/stubs/ProductsPage'
-
 // Session 3 pages — code-split
+const ProductsPage = lazy(() => import('./pages/ProductsPage'))
 const DashboardsPage = lazy(() => import('./pages/DashboardsPage'))
 
 // Shortener — code-split

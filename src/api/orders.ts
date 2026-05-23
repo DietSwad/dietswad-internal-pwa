@@ -135,3 +135,11 @@ export async function sendInvoice(pageId: string): Promise<string> {
   )
   return data.invoice_number
 }
+
+export async function sendInvoiceByOrderId(orderId: string): Promise<string> {
+  const { data } = await apiClient.post<{ success: boolean; invoice_number: string }>(
+    '/send-invoice',
+    { order_id: orderId }
+  )
+  return data.invoice_number
+}
