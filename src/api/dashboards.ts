@@ -26,7 +26,7 @@ export interface OrdersData {
   recent_orders: Array<{
     order_id: string
     customer_name: string
-    amount: number
+    total_amount: number
     order_date: string
     status: string
     payment_status: string

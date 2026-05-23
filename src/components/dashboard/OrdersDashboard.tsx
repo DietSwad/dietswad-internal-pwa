@@ -126,7 +126,7 @@ export default function OrdersDashboard() {
                 <p className="text-xs text-ink/40">{o.order_id} · {o.order_date}</p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-sm font-semibold text-ink">{fmt(o.amount)}</p>
+                <p className="text-sm font-semibold text-ink">{fmt(o.total_amount ?? 0)}</p>
                 <p className="text-xs text-ink/40">{o.status}</p>
               </div>
             </div>
