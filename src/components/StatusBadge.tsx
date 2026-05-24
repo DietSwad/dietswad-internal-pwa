@@ -7,6 +7,8 @@ const COLOR_MAP: Record<string, string> = {
   Paid:              'bg-green-100 text-green-800',
   'Not Paid':        'bg-red-100 text-red-800',
   COD:               'bg-yellow-100 text-yellow-800',
+  'Partial Paid':    'bg-amber-100 text-amber-800',
+  'Partial COD':     'bg-amber-100 text-amber-800',
 }
 
 export default function StatusBadge({ label }: { label: string }) {

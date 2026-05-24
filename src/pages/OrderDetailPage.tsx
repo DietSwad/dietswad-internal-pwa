@@ -20,8 +20,8 @@ interface EditForm {
 }
 
 const STATUS_OPTIONS         = ['New', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
-const PAYMENT_OPTIONS        = ['Paid', 'Not Paid', 'COD']
-const PAYMENT_METHOD_OPTIONS = ['UPI', 'Cash', 'COD', 'Payment Link', 'Bank Transfer']
+const PAYMENT_OPTIONS        = ['Paid', 'Partial Paid', 'Not Paid', 'COD']
+const PAYMENT_METHOD_OPTIONS = ['UPI', 'Cash', 'COD', 'Partial COD', 'Payment Link', 'Bank Transfer']
 
 export default function OrderDetailPage() {
   const { pageId } = useParams<{ pageId: string }>()
@@ -229,6 +229,12 @@ export default function OrderDetailPage() {
             {!editMode ? (
               <>
                 {order.paymentMethod && <p className="text-sm text-ink">Method: {order.paymentMethod}</p>}
+                {order.onlineAmountPaid > 0 && order.codAmountDue > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-ink/60">Paid online: <span className="font-semibold text-ink">{formatINR(order.onlineAmountPaid)}</span></p>
+                    <p className="text-xs text-amber-700 font-semibold">To collect: {formatINR(order.codAmountDue)}</p>
+                  </div>
+                )}
                 {order.paymentReference && (
                   <p className="text-xs text-ink/50 mt-1 font-mono">Ref: {order.paymentReference}</p>
                 )}

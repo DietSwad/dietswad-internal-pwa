@@ -29,6 +29,8 @@ export interface FlatOrder {
   paymentReference: string
   distributorName: string
   invoiceNumber: string
+  onlineAmountPaid: number
+  codAmountDue: number
 }
 
 export interface OrderFilters {
@@ -74,6 +76,8 @@ export function flattenOrder(page: Record<string, unknown>): FlatOrder {
     paymentReference: rt(props, 'Payment Reference'),
     distributorName: rt(props, 'Distributor Name'),
     invoiceNumber: rt(props, 'Invoice Number'),
+    onlineAmountPaid: (props['Online Amount Paid'] as { number?: number })?.number ?? 0,
+    codAmountDue: (props['COD Amount Due'] as { number?: number })?.number ?? 0,
   }
 }
 

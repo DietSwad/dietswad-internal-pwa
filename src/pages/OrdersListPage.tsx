@@ -30,6 +30,7 @@ export default function OrdersListPage() {
       revenue: todayOrders.filter((o) => o.payment === 'Paid').reduce((s, o) => s + o.amount, 0),
       pending: todayOrders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length,
       codPending: todayOrders.filter((o) => o.payment === 'COD' || o.payment === 'Not Paid').length,
+      codToCollect: todayOrders.filter((o) => o.codAmountDue > 0).reduce((s, o) => s + o.codAmountDue, 0),
     }
   }, [orders])
 
@@ -51,16 +52,17 @@ export default function OrdersListPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-5">
         {/* Today's summary strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
           {[
-            { label: 'Orders today', value: todaySummary.count },
-            { label: 'Revenue today', value: formatINR(todaySummary.revenue) },
-            { label: 'Pending today', value: todaySummary.pending },
-            { label: 'COD pending', value: todaySummary.codPending },
-          ].map(({ label, value }) => (
-            <div key={label} className="bg-cream rounded-xl border border-surface p-3">
-              <p className="text-xs text-ink/40">{label}</p>
-              <p className="text-lg font-semibold text-ink mt-0.5">{value}</p>
+            { label: 'Orders today',       value: todaySummary.count,                        highlight: false },
+            { label: 'Revenue today',      value: formatINR(todaySummary.revenue),            highlight: false },
+            { label: 'Pending today',      value: todaySummary.pending,                       highlight: false },
+            { label: 'COD pending',        value: todaySummary.codPending,                    highlight: false },
+            { label: 'COD to collect',     value: formatINR(todaySummary.codToCollect),        highlight: todaySummary.codToCollect > 0 },
+          ].map(({ label, value, highlight }) => (
+            <div key={label} className={`rounded-xl border p-3 ${highlight ? 'bg-amber-50 border-amber-200' : 'bg-cream border-surface'}`}>
+              <p className={`text-xs ${highlight ? 'text-amber-700' : 'text-ink/40'}`}>{label}</p>
+              <p className={`text-lg font-semibold mt-0.5 ${highlight ? 'text-amber-800' : 'text-ink'}`}>{value}</p>
             </div>
           ))}
         </div>

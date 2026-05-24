@@ -14,7 +14,12 @@ export default function OrderCard({ order }: { order: FlatOrder }) {
           <p className="font-semibold text-sm text-ink truncate">{order.customerName || '—'}</p>
           <p className="text-xs text-ink/50 mt-0.5 font-mono">{order.orderId || order.pageId.slice(0, 12)}</p>
         </div>
-        <p className="font-bold text-sm text-espresso whitespace-nowrap">{formatINR(order.amount)}</p>
+        <div className="text-right">
+          <p className="font-bold text-sm text-espresso whitespace-nowrap">{formatINR(order.amount)}</p>
+          {order.codAmountDue > 0 && (
+            <p className="text-xs text-amber-700 font-semibold whitespace-nowrap mt-0.5">Collect {formatINR(order.codAmountDue)}</p>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-2 mt-2.5 flex-wrap">
         <StatusBadge label={order.status} />
