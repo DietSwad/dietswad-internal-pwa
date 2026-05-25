@@ -79,7 +79,7 @@ export default function OrderDetailPage() {
     if (!order) return
     try {
       const invoiceNo = await sendInvoiceMut.mutateAsync(order.pageId)
-      toast.success(`Invoice ${invoiceNo} sent to customer`)
+      toast.success(`Invoice ${invoiceNo} sent · Order ${order.orderId || order.pageId.slice(0, 8)}`)
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
         || 'Failed to send invoice'
