@@ -88,14 +88,7 @@ export default function OrderDetailPage() {
   }
 
   const emailValid = !!order?.email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(order.email)
-  const invoiceAllowed =
-    emailValid &&
-    (order?.payment === 'Paid' ||
-      order?.payment === 'COD' ||
-      (order?.payment === 'Partial Paid' &&
-        (order?.paymentMethod === 'COD' || order?.paymentMethod === 'Partial COD')) ||
-      order?.type === 'Manual' ||
-      order?.type === 'Distributor')
+  const invoiceAllowed = emailValid
 
   if (isLoading) {
     return (
@@ -157,11 +150,7 @@ export default function OrderDetailPage() {
             <button
               onClick={onSendInvoice}
               disabled={!invoiceAllowed || sendInvoiceMut.isPending}
-              title={
-                !emailValid ? 'No valid email on this order'
-                : !invoiceAllowed ? 'Only Paid, COD, Partial Paid COD, Manual, or Distributor orders can be invoiced'
-                : 'Resend invoice'
-              }
+              title={!emailValid ? 'No valid email on this order' : 'Send invoice'}
               className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-gold text-espresso rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Send size={14} />
