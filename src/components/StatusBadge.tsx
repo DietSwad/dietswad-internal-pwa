@@ -4,6 +4,8 @@ const COLOR_MAP: Record<string, string> = {
   'Out for Delivery':'bg-orange-100 text-orange-800',
   Delivered:         'bg-green-100 text-green-800',
   Cancelled:         'bg-red-100 text-red-800',
+  RTO:               'bg-red-200 text-red-900',
+  Lost:              'bg-red-300 text-red-950',
   Paid:              'bg-green-100 text-green-800',
   'Not Paid':        'bg-red-100 text-red-800',
   COD:               'bg-yellow-100 text-yellow-800',

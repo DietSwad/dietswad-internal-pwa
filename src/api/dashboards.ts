@@ -31,6 +31,29 @@ export interface OrdersData {
     status: string
     payment_status: string
   }>
+  // COD + RTO segmentation (added Phase 1 Feature Addition 2026-05-28)
+  payment_split?: {
+    cod:        { count: number; revenue: number }
+    partial_cod: { count: number; revenue: number; online_collected: number; cod_collected: number }
+    prepaid:    { count: number; revenue: number }
+  }
+  rto?: {
+    cod_rto_count: number
+    cod_shipped_count: number
+    cod_rto_rate: number
+    prepaid_rto_count: number
+    prepaid_shipped_count: number
+    prepaid_rto_rate: number
+    by_reason: Record<string, number>
+    by_pincode: Array<{ pincode: string; rto_count: number; rto_loss_total: number }>
+  }
+  rto_loss?: {
+    total_loss: number
+    cod_loss: number
+    prepaid_loss: number
+    avg_loss_per_rto: number
+    loss_as_pct_of_revenue: number
+  }
 }
 
 export interface MetaData {

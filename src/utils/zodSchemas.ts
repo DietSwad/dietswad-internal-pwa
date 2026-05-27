@@ -6,8 +6,8 @@ export const ManualOrderSchema = z.object({
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   address: z.string().min(5, 'Address is required'),
   pincode: z.string().regex(/^\d{6}$/, 'Enter a 6-digit pincode'),
-  payment_method: z.enum(['UPI', 'Cash', 'COD', 'Payment Link', 'Bank Transfer']),
-  payment_status: z.enum(['Paid', 'Not Paid', 'COD']),
+  payment_method: z.enum(['UPI', 'Cash', 'COD', 'Partial COD', 'Payment Link', 'Bank Transfer']),
+  payment_status: z.enum(['Paid', 'Not Paid', 'COD', 'Cancelled']),
   notes: z.string().max(500).optional(),
   distributor_name: z.string().optional(),
   items: z
@@ -61,3 +61,25 @@ export const ShortenUrlSchema = z.object({
 })
 
 export type ShortenUrlFormValues = z.infer<typeof ShortenUrlSchema>
+
+export const DELIVERY_OUTCOME_OPTIONS = ['Refused', 'Undelivered', 'Lost', 'Damaged'] as const
+export const RTO_REASON_OPTIONS = [
+  'Customer Refused',
+  'Address Not Found',
+  'Phone Unreachable',
+  'Out of Delivery Area',
+  'Cash Not Available',
+  'Wrong Product Expectation',
+  'Other',
+] as const
+
+export const RtoLogSchema = z.object({
+  outcome:           z.enum(DELIVERY_OUTCOME_OPTIONS),
+  reason:            z.enum(RTO_REASON_OPTIONS),
+  rto_shipping_cost: z.coerce.number().min(0, 'Enter shipping cost (0 if none)'),
+  rto_tracking_id:   z.string().max(80).optional().or(z.literal('')),
+  rto_date:          z.string().optional().or(z.literal('')),
+  notes:             z.string().max(500).optional().or(z.literal('')),
+})
+
+export type RtoLogFormValues = z.infer<typeof RtoLogSchema>

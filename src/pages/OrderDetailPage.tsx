@@ -1,12 +1,14 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { ChevronLeft, Edit3, Send, Phone } from 'lucide-react'
+import { ChevronLeft, Edit3, Send, Phone, CheckCircle, AlertTriangle } from 'lucide-react'
 import Nav from '../components/Nav'
 import StatusBadge from '../components/StatusBadge'
-import { useOrdersList, useUpdateOrder, useSendInvoice } from '../hooks/useOrders'
+import RtoLogModal from '../components/RtoLogModal'
+import { useOrdersList, useUpdateOrder, useSendInvoice, useMarkDelivered, useMarkRto } from '../hooks/useOrders'
 import { useToast } from '../components/ToastProvider'
 import { formatINR, formatDate, formatPhone } from '../utils/format'
+import type { RtoLogFormValues } from '../utils/zodSchemas'
 
 interface EditForm {
   status: string
@@ -28,12 +30,15 @@ export default function OrderDetailPage() {
   const navigate = useNavigate()
   const toast = useToast()
   const [editMode, setEditMode] = useState(false)
+  const [rtoModalOpen, setRtoModalOpen] = useState(false)
 
   const { data: orders = [], isLoading } = useOrdersList({})
   const order = useMemo(() => orders.find((o) => o.pageId === pageId), [orders, pageId])
 
-  const updateOrderMut = useUpdateOrder()
-  const sendInvoiceMut = useSendInvoice()
+  const updateOrderMut  = useUpdateOrder()
+  const sendInvoiceMut  = useSendInvoice()
+  const markDeliveredMut = useMarkDelivered()
+  const markRtoMut      = useMarkRto()
 
   const { register, handleSubmit, reset } = useForm<EditForm>()
 
@@ -87,8 +92,39 @@ export default function OrderDetailPage() {
     }
   }
 
+  async function onMarkDelivered() {
+    if (!order) return
+    try {
+      await markDeliveredMut.mutateAsync({ orderId: order.orderId || order.pageId })
+      toast.success('Marked as Delivered' + (order.payment === 'COD' ? ' · COD collected' : ''))
+    } catch {
+      toast.error('Failed to mark delivered')
+    }
+  }
+
+  async function onMarkRto(values: RtoLogFormValues) {
+    if (!order) return
+    try {
+      await markRtoMut.mutateAsync({
+        order_id:          order.orderId || order.pageId,
+        outcome:           values.outcome,
+        reason:            values.reason,
+        rto_shipping_cost: values.rto_shipping_cost,
+        rto_tracking_id:   values.rto_tracking_id || undefined,
+        rto_date:          values.rto_date || undefined,
+        notes:             values.notes || undefined,
+      })
+      toast.success('RTO logged')
+      setRtoModalOpen(false)
+    } catch {
+      toast.error('Failed to log RTO')
+    }
+  }
+
   const emailValid = !!order?.email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(order.email)
   const invoiceAllowed = emailValid
+  const showDeliveryActions = order?.status === 'Out for Delivery'
+  const isRto = order?.status === 'RTO' || order?.status === 'Lost'
 
   if (isLoading) {
     return (
@@ -157,6 +193,41 @@ export default function OrderDetailPage() {
               {sendInvoiceMut.isPending ? 'Sending…' : 'Send Invoice'}
             </button>
           </div>
+        </div>
+
+        {/* Delivery action buttons — shown when order is Out for Delivery */}
+        {showDeliveryActions && (
+          <div className="flex gap-3 mb-4">
+            <button
+              onClick={onMarkDelivered}
+              disabled={markDeliveredMut.isPending}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-600 text-white rounded-xl font-semibold text-sm hover:bg-green-700 disabled:opacity-50"
+            >
+              <CheckCircle size={15} />
+              {markDeliveredMut.isPending ? 'Updating…' : (order?.payment === 'COD' ? 'Mark Delivered · COD Collected' : 'Mark Delivered')}
+            </button>
+            <button
+              onClick={() => setRtoModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-100 text-red-700 rounded-xl font-semibold text-sm hover:bg-red-200"
+            >
+              <AlertTriangle size={15} /> Log RTO
+            </button>
+          </div>
+        )}
+
+        {/* RTO summary card */}
+        {isRto && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">Return to Origin</p>
+            {order?.deliveryOutcome && <p className="text-sm text-ink">Outcome: <span className="font-medium">{order.deliveryOutcome}</span></p>}
+            {order?.rtoReason      && <p className="text-sm text-ink">Reason: <span className="font-medium">{order.rtoReason}</span></p>}
+            {order?.rtoShippingCost !== undefined && order.rtoShippingCost > 0 && (
+              <p className="text-sm text-red-700 font-semibold">Loss absorbed: {formatINR(order.rtoShippingCost)}</p>
+            )}
+            {order?.rtoTrackingId && <p className="text-xs text-ink/50 font-mono mt-1">Return AWB: {order.rtoTrackingId}</p>}
+          </div>
+        )}
+
         </div>
 
         {/* Detail sections */}
@@ -285,6 +356,14 @@ export default function OrderDetailPage() {
           </div>
         )}
       </main>
+
+      <RtoLogModal
+        orderId={order?.orderId || order?.pageId || ''}
+        isOpen={rtoModalOpen}
+        isPending={markRtoMut.isPending}
+        onClose={() => setRtoModalOpen(false)}
+        onSubmit={onMarkRto}
+      />
     </div>
   )
 }

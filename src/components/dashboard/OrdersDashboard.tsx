@@ -115,6 +115,67 @@ export default function OrdersDashboard() {
         </div>
       </div>
 
+      {/* COD vs Prepaid split */}
+      {data.payment_split ? (
+        <div className="bg-white rounded-xl border border-ink/10 p-4">
+          <p className="text-xs font-medium text-ink/50 mb-3 uppercase tracking-wide">Payment method split</p>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Prepaid',     d: data.payment_split.prepaid,    color: 'bg-green-500' },
+              { label: 'Partial COD', d: data.payment_split.partial_cod, color: 'bg-amber-500' },
+              { label: 'Full COD',    d: data.payment_split.cod,        color: 'bg-orange-500' },
+            ].map(({ label, d, color }) => (
+              <div key={label} className="text-center">
+                <div className={`w-3 h-3 rounded-full ${color} mx-auto mb-1`} />
+                <p className="text-xs text-ink/50">{label}</p>
+                <p className="text-base font-semibold text-ink">{d.count}</p>
+                <p className="text-xs text-ink/40">{fmt(d.revenue)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-ink/10 p-4 text-center">
+          <p className="text-xs text-ink/40">Payment split — pipeline pending</p>
+        </div>
+      )}
+
+      {/* RTO metrics */}
+      {data.rto && data.rto_loss ? (() => {
+        const rto = data.rto!
+        const loss = data.rto_loss!
+        const codRate = Math.round(rto.cod_rto_rate * 100)
+        const rateColor = codRate >= 15 ? 'text-red-600' : codRate >= 8 ? 'text-amber-600' : 'text-green-700'
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white rounded-xl border border-ink/10 px-4 py-3">
+              <p className="text-xs text-ink/40 mb-1">COD RTO rate</p>
+              <p className={`text-lg font-semibold ${rateColor}`}>{codRate}%</p>
+              <p className="text-xs text-ink/30">{rto.cod_rto_count}/{rto.cod_shipped_count} shipped</p>
+            </div>
+            <div className="bg-white rounded-xl border border-red-100 px-4 py-3">
+              <p className="text-xs text-ink/40 mb-1">RTO loss absorbed</p>
+              <p className="text-lg font-semibold text-red-600">{fmt(loss.total_loss)}</p>
+              <p className="text-xs text-ink/30">COD {fmt(loss.cod_loss)} · Pre {fmt(loss.prepaid_loss)}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-ink/10 px-4 py-3">
+              <p className="text-xs text-ink/40 mb-1">Avg loss / RTO</p>
+              <p className="text-lg font-semibold text-ink">{fmt(loss.avg_loss_per_rto)}</p>
+              <p className="text-xs text-ink/30">reverse shipping</p>
+            </div>
+            <div className="bg-white rounded-xl border border-ink/10 px-4 py-3">
+              <p className="text-xs text-ink/40 mb-1">Loss % of revenue</p>
+              <p className="text-lg font-semibold text-ink">{(loss.loss_as_pct_of_revenue * 100).toFixed(1)}%</p>
+              <p className="text-xs text-ink/30">{Object.values(rto.by_reason).reduce((a, b) => a + b, 0)} total RTOs</p>
+            </div>
+          </div>
+        )
+      })() : (
+        <div className="bg-white rounded-xl border border-ink/10 p-4 text-center">
+          <p className="text-xs text-ink/40">RTO metrics — pipeline pending</p>
+        </div>
+      )}
+
       {/* Recent orders */}
       <div className="bg-white rounded-xl border border-ink/10 overflow-hidden">
         <p className="text-xs font-medium text-ink/50 uppercase tracking-wide px-4 pt-4 pb-2">Recent orders</p>

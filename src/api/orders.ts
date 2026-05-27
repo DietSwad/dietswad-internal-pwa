@@ -31,11 +31,16 @@ export interface FlatOrder {
   invoiceNumber: string
   onlineAmountPaid: number
   codAmountDue: number
+  deliveryOutcome: string
+  rtoReason: string
+  rtoShippingCost: number
+  rtoTrackingId: string
 }
 
 export interface OrderFilters {
   status?: string
   payment?: string
+  payment_method?: string
   type?: string
   date_from?: string
   date_to?: string
@@ -78,6 +83,10 @@ export function flattenOrder(page: Record<string, unknown>): FlatOrder {
     invoiceNumber: rt(props, 'Invoice Number'),
     onlineAmountPaid: (props['Online Amount Paid'] as { number?: number })?.number ?? 0,
     codAmountDue: (props['COD Amount Due'] as { number?: number })?.number ?? 0,
+    deliveryOutcome: (props['Delivery Outcome'] as { select?: { name: string } })?.select?.name ?? '',
+    rtoReason: (props['RTO Reason'] as { select?: { name: string } })?.select?.name ?? '',
+    rtoShippingCost: (props['RTO Shipping Cost'] as { number?: number })?.number ?? 0,
+    rtoTrackingId: rt(props, 'RTO Tracking ID'),
   }
 }
 
@@ -85,12 +94,13 @@ export function flattenOrder(page: Record<string, unknown>): FlatOrder {
 
 export async function getOrders(filters: OrderFilters = {}): Promise<FlatOrder[]> {
   const params = new URLSearchParams()
-  if (filters.status)    params.set('status',    filters.status)
-  if (filters.payment)   params.set('payment',   filters.payment)
-  if (filters.type)      params.set('type',      filters.type)
-  if (filters.date_from) params.set('date_from', filters.date_from)
-  if (filters.date_to)   params.set('date_to',   filters.date_to)
-  if (filters.limit)     params.set('limit',     String(filters.limit))
+  if (filters.status)         params.set('status',         filters.status)
+  if (filters.payment)        params.set('payment',        filters.payment)
+  if (filters.payment_method) params.set('payment_method', filters.payment_method)
+  if (filters.type)           params.set('type',           filters.type)
+  if (filters.date_from)      params.set('date_from',      filters.date_from)
+  if (filters.date_to)        params.set('date_to',        filters.date_to)
+  if (filters.limit)          params.set('limit',          String(filters.limit))
 
   const { data } = await apiClient.get<{ results: Record<string, unknown>[]; count: number }>(
     `/orders?${params}`
@@ -146,4 +156,22 @@ export async function sendInvoiceByOrderId(orderId: string): Promise<string> {
     { order_id: orderId }
   )
   return data.invoice_number
+}
+
+export async function markDelivered(orderId: string, paymentReference?: string): Promise<void> {
+  await apiClient.post('/mark-delivered', { order_id: orderId, payment_reference: paymentReference ?? '' })
+}
+
+export interface MarkRtoPayload {
+  order_id: string
+  outcome: string
+  reason: string
+  rto_shipping_cost: number
+  rto_tracking_id?: string
+  rto_date?: string
+  notes?: string
+}
+
+export async function markRto(payload: MarkRtoPayload): Promise<void> {
+  await apiClient.post('/mark-rto', payload)
 }

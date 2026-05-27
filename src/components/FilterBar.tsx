@@ -1,8 +1,9 @@
 import { type OrderFilters } from '../api/orders'
 
-const STATUS_OPTIONS  = ['', 'New', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
-const PAYMENT_OPTIONS = ['', 'Paid', 'Not Paid', 'COD']
-const TYPE_OPTIONS    = ['', 'Website', 'Manual', 'Distributor', 'Offline', 'WhatsApp']
+const STATUS_OPTIONS         = ['', 'New', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled', 'RTO', 'Lost']
+const PAYMENT_OPTIONS        = ['', 'Paid', 'Not Paid', 'COD', 'Partial Paid']
+const PAYMENT_METHOD_OPTIONS = ['', 'Prepaid', 'COD', 'Partial COD']
+const TYPE_OPTIONS           = ['', 'Website', 'Manual', 'Distributor', 'Offline', 'WhatsApp']
 
 const SELECT_CLS = 'text-xs border border-surface bg-cream rounded-lg px-2 py-1.5 text-ink focus:ring-2 focus:ring-gold/40 focus:outline-none'
 
@@ -24,6 +25,10 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
 
       <select value={filters.payment ?? ''} onChange={(e) => set('payment', e.target.value)} className={SELECT_CLS}>
         {PAYMENT_OPTIONS.map((o) => <option key={o} value={o}>{o || 'All payment'}</option>)}
+      </select>
+
+      <select value={filters.payment_method ?? ''} onChange={(e) => set('payment_method', e.target.value)} className={SELECT_CLS}>
+        {PAYMENT_METHOD_OPTIONS.map((o) => <option key={o} value={o}>{o || 'All methods'}</option>)}
       </select>
 
       <select value={filters.type ?? ''} onChange={(e) => set('type', e.target.value)} className={SELECT_CLS}>

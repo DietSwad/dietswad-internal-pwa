@@ -4,10 +4,13 @@ import {
   updateOrder,
   createManualOrder,
   sendInvoice,
+  markDelivered,
+  markRto,
   type OrderFilters,
   type FlatOrder,
   type UpdateOrderPayload,
   type CreateManualOrderPayload,
+  type MarkRtoPayload,
 } from '../api/orders'
 
 export function useOrdersList(filters: OrderFilters = {}) {
@@ -71,4 +74,21 @@ export function useCreateManualOrder() {
 
 export function useSendInvoice() {
   return useMutation({ mutationFn: sendInvoice })
+}
+
+export function useMarkDelivered() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ orderId, paymentReference }: { orderId: string; paymentReference?: string }) =>
+      markDelivered(orderId, paymentReference),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] }),
+  })
+}
+
+export function useMarkRto() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: MarkRtoPayload) => markRto(payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] }),
+  })
 }
