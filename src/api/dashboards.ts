@@ -117,8 +117,20 @@ export interface UnifiedData {
 
 // --- API functions ---
 
+// Cache-bust support: the /api/dashboard response is cached in-browser for 2 minutes
+// (Cache-Control: private, max-age=120). markForceFresh() sets a shared timestamp that
+// getDashboard appends as ?_cb=<ts>, changing the URL so the browser skips its cache.
+// Called by useTriggerRefresh before invalidateQueries so all parallel refetches get it.
+let _cacheBustTs: string | null = null
+export function markForceFresh() {
+  _cacheBustTs = String(Date.now())
+  setTimeout(() => { _cacheBustTs = null }, 10_000)
+}
+
 export async function getDashboard<T = unknown>(type: DashboardType): Promise<T> {
-  const res = await apiClient.get<T>('/dashboard', { params: { type } })
+  const params: Record<string, string> = { type }
+  if (_cacheBustTs) params._cb = _cacheBustTs
+  const res = await apiClient.get<T>('/dashboard', { params })
   return res.data
 }
 

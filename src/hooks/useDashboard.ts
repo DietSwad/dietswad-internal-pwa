@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getDashboard, triggerRefresh, type DashboardType } from '../api/dashboards'
+import { getDashboard, triggerRefresh, markForceFresh, type DashboardType } from '../api/dashboards'
 
 export function useDashboard<T>(type: DashboardType) {
   return useQuery({
@@ -14,6 +14,7 @@ export function useTriggerRefresh() {
   return useMutation({
     mutationFn: () => triggerRefresh('full-refresh'),
     onSuccess: () => {
+      markForceFresh()
       qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
