@@ -11,7 +11,7 @@ export default function Nav({ title = 'Diet Swad' }: NavProps) {
   const showBack = location.pathname !== '/'
 
   return (
-    <header className="sticky top-0 z-50 bg-espresso text-on-dark shadow-md">
+    <header className="sticky top-0 z-50 bg-espresso text-on-dark shadow-md print:hidden">
       <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {showBack && (

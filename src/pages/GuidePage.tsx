@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ChevronDown, ChevronRight, Printer } from 'lucide-react'
 import Nav from '../components/Nav'
 
 // ── Accordion section component ───────────────────────────────────────────────
@@ -13,6 +13,13 @@ interface SectionProps {
 
 function Section({ title, tags, defaultOpen = false, children }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen)
+
+  useEffect(() => {
+    const expand = () => setOpen(true)
+    window.addEventListener('beforeprint', expand)
+    return () => window.removeEventListener('beforeprint', expand)
+  }, [])
+
   return (
     <div className="bg-cream rounded-xl border border-surface overflow-hidden">
       <button
@@ -89,11 +96,21 @@ export default function GuidePage() {
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-3">
 
         {/* Header */}
-        <div className="mb-2">
-          <h2 className="text-lg font-bold text-ink">Diet Swad — Team Guide</h2>
-          <p className="text-xs text-ink/50 mt-0.5">
-            Internal app guide · Radiant Twins Enterprise · v2.0
-          </p>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <h2 className="text-lg font-bold text-ink">Diet Swad — Team Guide</h2>
+            <p className="text-xs text-ink/50 mt-0.5">
+              Internal app guide · Radiant Twins Enterprise · v2.0
+            </p>
+          </div>
+          <button
+            onClick={() => window.print()}
+            className="print:hidden flex-shrink-0 flex items-center gap-1.5 text-xs px-3 py-2 bg-espresso text-on-dark rounded-xl hover:bg-espresso-light transition-colors"
+            aria-label="Print or save as PDF"
+          >
+            <Printer size={13} />
+            <span className="hidden sm:inline">Save PDF</span>
+          </button>
         </div>
 
         {/* 1 */}

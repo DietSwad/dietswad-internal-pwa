@@ -4,7 +4,7 @@ import { BOTTOM_TABS } from '../nav-items'
 export default function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 bg-espresso border-t border-white/10"
+      className="fixed bottom-0 inset-x-0 z-50 bg-espresso border-t border-white/10 print:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="max-w-2xl mx-auto flex">

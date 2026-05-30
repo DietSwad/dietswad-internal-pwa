@@ -17,6 +17,12 @@ body {
   min-height: 100dvh;
 }
 
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { padding: 0 !important; background-color: white !important; }
+  @page { margin: 1.5cm; }
+}
+
 @layer components {
   .input-field {
     @apply border border-surface bg-linen rounded-lg px-3 py-2 text-sm text-ink
