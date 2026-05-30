@@ -38,6 +38,7 @@ const ManualOrderPage  = lazy(() => import('./pages/ManualOrderPage'))
 const BulkEntryPage    = lazy(() => import('./pages/BulkEntryPage'))
 const SettingsPage     = lazy(() => import('./pages/SettingsPage'))
 const UtmSummaryPage   = lazy(() => import('./pages/UtmSummaryPage'))
+const GuidePage        = lazy(() => import('./pages/GuidePage'))
 const ShareLinkChannelSelectPage = lazy(() => import('./pages/share-link/ShareLinkChannelSelectPage'))
 const ShareLinkDisplayPage       = lazy(() => import('./pages/share-link/ShareLinkDisplayPage'))
 
@@ -81,6 +82,7 @@ export default function App() {
               {/* Settings */}
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/utm-summary" element={<UtmSummaryPage />} />
+              <Route path="/guide" element={<GuidePage />} />
 
               {/* Shortener */}
               <Route path="/shortener" element={<ShortenerListPage />} />
