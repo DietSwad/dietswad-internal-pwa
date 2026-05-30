@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ExternalLink, BookOpen } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import Nav from '../components/Nav'
 import { useToast } from '../components/ToastProvider'
 import { usePush } from '../hooks/usePush'
@@ -164,9 +164,6 @@ export default function SettingsPage() {
           </div>
           <Link to="/settings/utm-summary" className="flex items-center gap-1.5 text-sm text-espresso hover:underline">
             <ExternalLink size={14} /> UTM Channel Summary
-          </Link>
-          <Link to="/guide" className="flex items-center gap-1.5 text-sm text-espresso hover:underline">
-            <BookOpen size={14} /> Team User Guide — how to use this app
           </Link>
         </section>
 
