@@ -143,7 +143,7 @@ export default function OrdersListPage() {
       {/* FAB — new order */}
       <Link
         to="/orders/new"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-espresso text-gold rounded-full shadow-lg flex items-center justify-center hover:bg-espresso-light transition-colors"
+        className="fixed bottom-[calc(1.5rem+5rem)] right-6 w-14 h-14 bg-espresso text-gold rounded-full shadow-lg flex items-center justify-center hover:bg-espresso-light transition-colors z-40"
         aria-label="New manual order"
       >
         <Plus size={24} />

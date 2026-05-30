@@ -13,7 +13,7 @@ import NotFoundPage from './pages/NotFoundPage'
 function ProtectedLayout() {
   return (
     <>
-      <div className="pb-20">
+      <div style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
         <Outlet />
       </div>
       <BottomNav />

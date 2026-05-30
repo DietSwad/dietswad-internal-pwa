@@ -270,7 +270,7 @@ export default function ShortenerListPage() {
       {/* FAB */}
       <button
         onClick={() => navigate('/shortener/new')}
-        className="fixed bottom-6 right-6 bg-espresso text-linen w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-espresso/90 active:scale-95 transition-transform z-10"
+        className="fixed bottom-[calc(1.5rem+5rem)] right-6 bg-espresso text-linen w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-espresso/90 active:scale-95 transition-transform z-40"
         aria-label="New short link"
       >
         <Plus size={24} />
