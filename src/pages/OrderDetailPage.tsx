@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { ChevronLeft, Edit3, Send, Phone, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Edit3, Send, Phone, CheckCircle, AlertTriangle } from 'lucide-react'
 import Nav from '../components/Nav'
 import StatusBadge from '../components/StatusBadge'
 import RtoLogModal from '../components/RtoLogModal'
@@ -27,7 +27,6 @@ const PAYMENT_METHOD_OPTIONS = ['UPI', 'Cash', 'COD', 'Partial COD', 'Payment Li
 
 export default function OrderDetailPage() {
   const { pageId } = useParams<{ pageId: string }>()
-  const navigate = useNavigate()
   const toast = useToast()
   const [editMode, setEditMode] = useState(false)
   const [rtoModalOpen, setRtoModalOpen] = useState(false)
@@ -141,9 +140,6 @@ export default function OrderDetailPage() {
         <Nav title="Order" />
         <div className="max-w-2xl mx-auto px-4 py-12 text-center">
           <p className="text-ink/50 text-sm">Order not found.</p>
-          <button onClick={() => navigate(-1)} className="mt-4 text-sm text-espresso underline">
-            Go back
-          </button>
         </div>
       </div>
     )
@@ -154,13 +150,6 @@ export default function OrderDetailPage() {
       <Nav title={order.orderId || 'Order'} />
 
       <main className="max-w-4xl mx-auto px-4 py-5">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1 text-sm text-ink/50 hover:text-ink mb-4"
-        >
-          <ChevronLeft size={16} /> Orders
-        </button>
-
         {/* Header card */}
         <div className="bg-cream rounded-xl border border-surface p-4 mb-4 flex flex-wrap items-start justify-between gap-4">
           <div>

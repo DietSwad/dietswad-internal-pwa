@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { ChevronLeft, Plus, Trash2, Upload } from 'lucide-react'
+import { Plus, Trash2, Upload } from 'lucide-react'
 import Nav from '../components/Nav'
 import { useCreateManualOrder } from '../hooks/useOrders'
 import { sendInvoiceByOrderId } from '../api/orders'
@@ -388,7 +388,6 @@ function CsvBatchTab() {
 // ── Main page ────────────────────────────────────────────────────────────────────────────
 
 export default function BulkEntryPage() {
-  const navigate = useNavigate()
   const [tab, setTab] = useState<TabId>('single')
   const [autoSendInvoice, setAutoSendInvoice] = useState(true)
 
@@ -396,10 +395,6 @@ export default function BulkEntryPage() {
     <div className="min-h-dvh bg-linen">
       <Nav title="Bulk Entry" />
       <main className="max-w-3xl mx-auto px-4 py-5">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-ink/50 hover:text-ink mb-4">
-          <ChevronLeft size={16} /> Back
-        </button>
-
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex gap-1 bg-surface p-1 rounded-xl w-fit">
             {(['single', 'csv'] as TabId[]).map((t) => (

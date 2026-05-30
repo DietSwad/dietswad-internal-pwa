@@ -1,66 +1,6 @@
-import {
-  BarChart2,
-  ClipboardList,
-  PlusCircle,
-  Layers,
-  Share2,
-  Link2,
-  Settings,
-  Package,
-} from 'lucide-react'
 import Nav from '../components/Nav'
 import Card from '../components/Card'
-
-const NAV_CARDS = [
-  {
-    to: '/dashboards',
-    icon: BarChart2,
-    label: 'Dashboards',
-    caption: 'Sales & inventory',
-  },
-  {
-    to: '/orders',
-    icon: ClipboardList,
-    label: 'Orders',
-    caption: 'View all orders',
-  },
-  {
-    to: '/orders/new',
-    icon: PlusCircle,
-    label: 'Manual Order',
-    caption: 'Create single order',
-  },
-  {
-    to: '/orders/bulk',
-    icon: Layers,
-    label: 'Bulk Entry',
-    caption: 'Import multiple orders',
-  },
-  {
-    to: '/share-link',
-    icon: Share2,
-    label: 'Share Link',
-    caption: 'UTM-tagged links for customers',
-  },
-  {
-    to: '/shortener',
-    icon: Link2,
-    label: 'URL Shortener',
-    caption: 'Manage short links',
-  },
-  {
-    to: '/products',
-    icon: Package,
-    label: 'Products',
-    caption: 'Catalog & stock',
-  },
-  {
-    to: '/settings',
-    icon: Settings,
-    label: 'Settings',
-    caption: 'Preferences',
-  },
-]
+import { NAV_CARDS } from '../nav-items'
 
 export default function HomePage() {
   return (

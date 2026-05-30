@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Trash2, ChevronLeft } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import Nav from '../components/Nav'
 import { useCreateManualOrder } from '../hooks/useOrders'
 import { useProducts } from '../hooks/useProducts'
@@ -98,10 +98,6 @@ export default function ManualOrderPage() {
     <div className="min-h-dvh bg-linen">
       <Nav title="Manual Order" />
       <main className="max-w-2xl mx-auto px-4 py-5">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-ink/50 hover:text-ink mb-4">
-          <ChevronLeft size={16} /> Back
-        </button>
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
           {/* Customer */}
           <section className="bg-cream rounded-xl border border-surface p-4 space-y-3">

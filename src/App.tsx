@@ -1,13 +1,25 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import RequireAuth from './components/RequireAuth'
+import BottomNav from './components/BottomNav'
 import InstallPrompt from './components/InstallPrompt'
 import PushPermissionPrompt from './components/PushPermissionPrompt'
 import { ToastProvider } from './components/ToastProvider'
 import LoginPage from './auth/LoginPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
+
+function ProtectedLayout() {
+  return (
+    <>
+      <div className="pb-20">
+        <Outlet />
+      </div>
+      <BottomNav />
+    </>
+  )
+}
 
 // Session 3 pages — code-split
 const ProductsPage = lazy(() => import('./pages/ProductsPage'))
@@ -50,6 +62,7 @@ export default function App() {
 
             {/* Protected */}
             <Route element={<RequireAuth />}>
+            <Route element={<ProtectedLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/dashboards" element={<DashboardsPage />} />
 
@@ -77,7 +90,8 @@ export default function App() {
 
               {/* Session 3+ stubs */}
               <Route path="/products" element={<ProductsPage />} />
-            </Route>
+            </Route>{/* /ProtectedLayout */}
+            </Route>{/* /RequireAuth */}
 
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
