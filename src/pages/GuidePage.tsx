@@ -225,17 +225,23 @@ export default function GuidePage() {
               to remove a line.
             </Step>
             <Step n={3}>
-              <strong>Payment method</strong> — Choose UPI, Cash, COD, Payment Link, or Bank
-              Transfer.
+              <strong>Payment method</strong> — Choose UPI, Cash, COD, Partial COD, Payment Link,
+              or Bank Transfer. Use "Partial COD" when the customer paid part online and will pay
+              the rest in cash on delivery.
             </Step>
             <Step n={4}>
               <strong>Payment status</strong> — "Paid" if already received, "Not Paid" if pending,
-              "COD" if they'll pay on delivery.
+              "COD" if they'll pay on delivery in full, "Cancelled" to cancel the order.
             </Step>
             <Step n={5}>
-              Add any notes (special instructions, reference numbers, etc.) — optional.
+              <strong>Custom / Gift orders</strong> — If you select "Custom Order" or "Gift
+              Hampers" as the product, a "Custom product name" field appears. Fill it in — it's
+              required for these two product types.
             </Step>
             <Step n={6}>
+              Add any notes (special instructions, reference numbers, etc.) — optional.
+            </Step>
+            <Step n={7}>
               Tap <strong>"Create Order"</strong>. You'll see a confirmation screen with the new
               Order ID.
             </Step>
@@ -435,7 +441,7 @@ export default function GuidePage() {
           <p>Use this for distributor orders (multiple SKUs, one delivery address).</p>
           <div className="space-y-1.5">
             <Step n={1}>Fill in customer details (same fields as Manual Order but with a Distributor Name field).</Step>
-            <Step n={2}>Add products and quantities. The system auto-fills the ₹499 price from the catalog.</Step>
+            <Step n={2}>Add products and quantities. The system auto-fills each product's price from the catalog.</Step>
             <Step n={3}>Set payment method and status.</Step>
             <Step n={4}>If you tick "Auto-send invoice", an invoice is emailed immediately on creation (requires a valid email).</Step>
             <Step n={5}>Tap <strong>"Create Distributor Order"</strong>.</Step>
@@ -487,25 +493,44 @@ export default function GuidePage() {
         </Section>
 
         {/* 12 */}
-        <Section title="12. Products — catalog & stock" tags="📱 Mobile · 👤 Worker">
+        <Section title="12. Products — catalog, prices & management" tags="📱 Mobile · 🛠 Owner (for editing)">
           <p>
-            Tap <strong>Products</strong> (Home → Products) to see the current product catalog — all
-            SKUs with their prices.
+            Tap <strong>Products</strong> (Home → Products) to see the live product catalog fetched
+            from the backend. Products are sorted by display order.
           </p>
           <p>
-            This catalog is used to auto-fill prices in Manual Order and Bulk Entry. If a product is
-            missing or the price is wrong, notify the owner — it's updated in the backend settings.
+            This catalog is what the app uses to auto-fill prices when creating orders. Each product
+            shows its name, current price, whether it's Active (shows in the order picker), and
+            whether it's listed on the website.
           </p>
-          <div className="space-y-1">
-            <Row label="Power Bites" value="₹499" />
-            <Row label="Royal Bites" value="₹499" />
-            <Row label="Peanut-Sesame Delights" value="₹499" />
-            <Row label="Millet Butter Cookies" value="₹499" />
-            <Row label="Millet Coconut Cookies" value="₹499" />
-            <Row label="Millet Choco Cookies" value="₹499" />
-            <Row label="Roasted Cashews" value="₹499" />
+          <Tip>
+            Products marked <strong>Legacy</strong> are old SKUs no longer sold — they appear in
+            the list for historical orders but are inactive in the order picker.
+          </Tip>
+
+          <H>Editing a product 🛠</H>
+          <div className="space-y-1.5">
+            <Step n={1}>Tap the <strong>pencil (edit) icon</strong> on any product row/card.</Step>
+            <Step n={2}>A drawer slides up. You can change:
+              <ul className="mt-1 ml-4 space-y-0.5 text-xs text-ink/60 list-disc">
+                <li><strong>Price (₹)</strong> — the selling price used in order calculations</li>
+                <li><strong>Active</strong> — if OFF, the product won't appear in the Manual Order / Bulk Entry pickers</li>
+                <li><strong>Show on website</strong> — controls whether the product is listed on the customer-facing website</li>
+              </ul>
+            </Step>
+            <Step n={3}>Tap <strong>Save</strong>. Changes sync to the backend immediately.</Step>
           </div>
-          <Tip>₹499 is the uniform retail price across all products.</Tip>
+
+          <H>Adding a new product 🛠</H>
+          <div className="space-y-1.5">
+            <Step n={1}>Tap <strong>"New product"</strong> (top-right button).</Step>
+            <Step n={2}>Enter product name, price (₹), display order (the sort position in the list), Active toggle, and Show on website toggle.</Step>
+            <Step n={3}>Tap <strong>"Add Product"</strong>.</Step>
+          </div>
+          <Warn>
+            Editing prices takes effect immediately for all new orders — but existing order records
+            keep the price they were created with. Always double-check before changing a price.
+          </Warn>
         </Section>
 
         {/* 13 */}
@@ -565,15 +590,21 @@ export default function GuidePage() {
               <p className="font-semibold text-xs">🔗 URL Shortener — Azure Function</p>
               <p className="text-xs text-ink/60 mt-0.5">A separate Azure Function handles dietswad.in/{'{code}'} redirects. Each click is counted and stored in Azure Table Storage.</p>
             </div>
+            <div className="bg-linen rounded-lg p-3">
+              <p className="font-semibold text-xs">📄 Invoice Worker — GitHub Actions</p>
+              <p className="text-xs text-ink/60 mt-0.5">When you tap "Send Invoice", the Azure API triggers a GitHub Actions job in the <strong>dietswad-invoice-worker</strong> repo. That job fetches the order from Notion, renders a PDF invoice (WeasyPrint), and emails it to the customer. It also assigns the invoice number and stamps it back in Notion.</p>
+            </div>
           </div>
 
           <H>GitHub repositories &amp; visibility</H>
           <div className="space-y-1">
             <Row label="DietSwad/DietSwad (website)" value="🌍 PUBLIC — customer-facing" />
             <Row label="DietSwad/dietswad-internal-pwa" value="🌍 PUBLIC — shell only, no data" />
-            <Row label="DietSwad/dietswad-api" value="🔒 PRIVATE — backend code + secrets" />
-            <Row label="DietSwad/internal-android-app" value="🔒 Frozen — not in active use" />
-            <Row label="DietSwad_URL_shortener_Azure_Function" value="🔒 Internal — redirect engine" />
+            <Row label="DietSwad/dietswad-api" value="🔒 PRIVATE — main backend (JWT, orders, shortener)" />
+            <Row label="DietSwad/dietswad-invoice-worker" value="🔒 PRIVATE — PDF invoice renderer + emailer" />
+            <Row label="DietSwad/internal-android-app" value="🔒 Frozen — URL shortener screens only" />
+            <Row label="DietSwad_URL_shortener_Azure_Function" value="🔒 Internal — dietswad.in/{code} redirects" />
+            <Row label="Whatsapp_Webhook_Azure_Function" value="🔒 Decommissioned — no live traffic" />
           </div>
           <Warn>
             The PWA repo is public but that's safe — it contains only the React app shell. All real
@@ -716,7 +747,7 @@ export default function GuidePage() {
             </div>
             <div>
               <p className="font-semibold text-xs">Azure Functions (serverless) for the backend</p>
-              <p className="text-xs text-ink/70 mt-0.5">The backend only needs to respond to order events — it doesn't need to run 24/7. Serverless means near-zero cost at low volumes, auto-scaling if we grow, and no server to maintain. Azure was chosen because it integrates well with Azure Table Storage (used for URL shortener click tracking) and Azure Blob (future dashboard data).</p>
+              <p className="text-xs text-ink/70 mt-0.5">The backend only needs to respond to order events — it doesn't need to run 24/7. Serverless means near-zero cost at low volumes, auto-scaling if we grow, and no server to maintain. Azure integrates with Azure Table Storage (URL shortener click counts) and Azure Blob (future dashboard data). Invoice rendering (PDF) runs as a separate GitHub Actions job to avoid timeout limits on Azure Functions.</p>
             </div>
             <div>
               <p className="font-semibold text-xs">Cloudflare Access for the internal app</p>
