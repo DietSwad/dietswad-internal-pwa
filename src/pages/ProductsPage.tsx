@@ -42,7 +42,7 @@ function EditDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
       <div
         className="bg-cream w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl border border-surface p-5 space-y-4"
         onClick={(e) => e.stopPropagation()}
@@ -118,7 +118,7 @@ function NewProductForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40" onClick={onClose}>
       <div
         className="bg-cream w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl border border-surface p-5 space-y-4"
         onClick={(e) => e.stopPropagation()}

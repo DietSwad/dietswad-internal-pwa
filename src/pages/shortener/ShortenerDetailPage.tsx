@@ -212,7 +212,7 @@ export default function ShortenerDetailPage() {
 
       {/* Delete confirm modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-20 p-4">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
             <h3 className="font-semibold text-ink mb-2">Delete short link?</h3>
             <p className="text-sm text-ink/60 mb-5">
