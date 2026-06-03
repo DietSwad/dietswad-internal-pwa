@@ -150,6 +150,13 @@ export async function sendInvoice(pageId: string): Promise<string> {
   return data.invoice_number
 }
 
+export async function downloadInvoice(pageId: string): Promise<{ blob: Blob; filename: string }> {
+  const res = await apiClient.post('/download-invoice', { page_id: pageId }, { responseType: 'blob' })
+  const cd = (res.headers['content-disposition'] as string) || ''
+  const m = /filename="?([^"]+)"?/.exec(cd)
+  return { blob: res.data as Blob, filename: m?.[1] || `invoice-${pageId.slice(0, 8)}.pdf` }
+}
+
 export async function sendInvoiceByOrderId(orderId: string): Promise<string> {
   const { data } = await apiClient.post<{ success: boolean; invoice_number: string }>(
     '/send-invoice',

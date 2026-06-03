@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Edit3, Send, Phone, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Edit3, Send, Download, Phone, CheckCircle, AlertTriangle } from 'lucide-react'
 import Nav from '../components/Nav'
 import StatusBadge from '../components/StatusBadge'
 import RtoLogModal from '../components/RtoLogModal'
-import { useOrdersList, useUpdateOrder, useSendInvoice, useMarkDelivered, useMarkRto } from '../hooks/useOrders'
+import { useOrdersList, useUpdateOrder, useSendInvoice, useDownloadInvoice, useMarkDelivered, useMarkRto } from '../hooks/useOrders'
 import { useToast } from '../components/ToastProvider'
 import { formatINR, formatDate, formatPhone } from '../utils/format'
 import type { RtoLogFormValues } from '../utils/zodSchemas'
@@ -36,6 +36,7 @@ export default function OrderDetailPage() {
 
   const updateOrderMut  = useUpdateOrder()
   const sendInvoiceMut  = useSendInvoice()
+  const downloadInvoiceMut = useDownloadInvoice()
   const markDeliveredMut = useMarkDelivered()
   const markRtoMut      = useMarkRto()
 
@@ -88,6 +89,43 @@ export default function OrderDetailPage() {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
         || 'Failed to send invoice'
       toast.error(msg)
+    }
+  }
+
+  async function onDownloadInvoice() {
+    if (!order) return
+    try {
+      const { blob, filename } = await downloadInvoiceMut.mutateAsync(order.pageId)
+      const file = new File([blob], filename, { type: 'application/pdf' })
+
+      // Mobile: open the native share sheet with the PDF attached (pick WhatsApp → chat).
+      if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: filename,
+            text: `Diet Swad invoice for ${order.customerName || 'your order'}`,
+          })
+          return
+        } catch (err) {
+          // User cancelled the share sheet — not an error.
+          if ((err as { name?: string })?.name === 'AbortError') return
+          // Any other share failure → fall through to download.
+        }
+      }
+
+      // Desktop / no file-share support: download the PDF.
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      toast.success(`Invoice ${filename} ready`)
+    } catch {
+      toast.error('Failed to generate invoice')
     }
   }
 
@@ -180,6 +218,15 @@ export default function OrderDetailPage() {
             >
               <Send size={14} />
               {sendInvoiceMut.isPending ? 'Sending…' : 'Send Invoice'}
+            </button>
+            <button
+              onClick={onDownloadInvoice}
+              disabled={downloadInvoiceMut.isPending}
+              title="Download invoice PDF to share on WhatsApp"
+              className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-espresso/10 text-espresso rounded-lg hover:bg-espresso/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download size={14} />
+              {downloadInvoiceMut.isPending ? 'Preparing…' : 'Download Invoice'}
             </button>
           </div>
         </div>

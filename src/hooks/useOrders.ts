@@ -4,6 +4,7 @@ import {
   updateOrder,
   createManualOrder,
   sendInvoice,
+  downloadInvoice,
   markDelivered,
   markRto,
   type OrderFilters,
@@ -74,6 +75,10 @@ export function useCreateManualOrder() {
 
 export function useSendInvoice() {
   return useMutation({ mutationFn: sendInvoice })
+}
+
+export function useDownloadInvoice() {
+  return useMutation({ mutationFn: downloadInvoice })
 }
 
 export function useMarkDelivered() {
