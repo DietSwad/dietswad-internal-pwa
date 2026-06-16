@@ -40,3 +40,22 @@ export async function updateProduct(payload: UpdateProductPayload): Promise<void
 export async function createProduct(payload: CreateProductPayload): Promise<void> {
   await apiClient.post('/manage/products', payload)
 }
+
+// ── COD fees (config partition; what we CHARGE) ───────────────────────────────
+
+export interface Fees {
+  full_cod: number
+  partial_cod: number
+  partial_cod_online_pct: number
+}
+
+export async function getFees(): Promise<Fees> {
+  // JWT-gated (apiClient), unlike the public product reads.
+  const { data } = await apiClient.get<Fees>('/manage/fees')
+  return data
+}
+
+export async function updateFees(payload: Partial<Fees>): Promise<Fees> {
+  const { data } = await apiClient.patch<Fees>('/manage/fees', payload)
+  return data
+}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Edit3, X, Check } from 'lucide-react'
 import Nav from '../components/Nav'
 import { useProducts, useUpdateProduct, useCreateProduct } from '../hooks/useProducts'
+import { useFees, useUpdateFees } from '../hooks/useFees'
 import { useToast } from '../components/ToastProvider'
 import { formatINR } from '../utils/format'
 import type { Product } from '../api/products'
@@ -182,6 +183,122 @@ function NewProductForm({ onClose }: { onClose: () => void }) {
   )
 }
 
+// ── COD fees card ────────────────────────────────────────────────────────────
+
+function FeesCard() {
+  const toast = useToast()
+  const { data: fees, isLoading } = useFees()
+  const updateFees = useUpdateFees()
+  const [editing, setEditing] = useState(false)
+  const [fullCod, setFullCod] = useState('')
+  const [partialCod, setPartialCod] = useState('')
+  const [onlinePct, setOnlinePct] = useState('')
+
+  function startEdit() {
+    if (!fees) return
+    setFullCod(String(fees.full_cod))
+    setPartialCod(String(fees.partial_cod))
+    setOnlinePct(String(fees.partial_cod_online_pct))
+    setEditing(true)
+  }
+
+  async function handleSave() {
+    const fc = parseInt(fullCod, 10)
+    const pc = parseInt(partialCod, 10)
+    const pct = parseInt(onlinePct, 10)
+    if ([fc, pc, pct].some((n) => isNaN(n) || n < 0)) {
+      toast.error('Enter valid non-negative numbers')
+      return
+    }
+    if (pct > 100) {
+      toast.error('Online % must be 0–100')
+      return
+    }
+    try {
+      await updateFees.mutateAsync({ full_cod: fc, partial_cod: pc, partial_cod_online_pct: pct })
+      toast.success('COD fees updated')
+      setEditing(false)
+    } catch {
+      toast.error('Failed to update fees')
+    }
+  }
+
+  return (
+    <div className="bg-cream rounded-xl border border-surface p-4 mb-5">
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-sm font-semibold text-ink">COD Fees</h2>
+        {!editing && (
+          <button
+            onClick={startEdit}
+            disabled={!fees}
+            className="flex items-center gap-1.5 text-xs text-ink/50 hover:text-espresso disabled:opacity-40"
+          >
+            <Edit3 size={13} /> Edit
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-ink/40 mb-3">
+        What we charge for COD. The backend and invoices read these. Also update{' '}
+        <code className="text-ink/60">prices.js</code> on the website so the checkout display matches.
+      </p>
+
+      {isLoading ? (
+        <p className="text-xs text-ink/40">Loading fees…</p>
+      ) : editing ? (
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            <FeeInput label="Full COD (₹)" value={fullCod} onChange={setFullCod} />
+            <FeeInput label="Partial COD (₹)" value={partialCod} onChange={setPartialCod} />
+            <FeeInput label="Online % (Partial)" value={onlinePct} onChange={setOnlinePct} />
+          </div>
+          <div className="flex gap-3 pt-3">
+            <button
+              onClick={handleSave}
+              disabled={updateFees.isPending}
+              className="flex-1 py-2 bg-espresso text-on-dark rounded-xl text-sm font-semibold disabled:opacity-50"
+            >
+              {updateFees.isPending ? 'Saving…' : 'Save fees'}
+            </button>
+            <button onClick={() => setEditing(false)} className="px-5 py-2 bg-surface text-ink rounded-xl text-sm font-semibold">
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          <FeeStat label="Full COD" value={fees ? `₹${fees.full_cod}` : '—'} />
+          <FeeStat label="Partial COD" value={fees ? `₹${fees.partial_cod}` : '—'} />
+          <FeeStat label="Online % (Partial)" value={fees ? `${fees.partial_cod_online_pct}%` : '—'} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FeeInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="text-xs text-ink/50 mb-1 block">{label}</label>
+      <input
+        type="number"
+        min={0}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="input-field w-full"
+      />
+    </div>
+  )
+}
+
+function FeeStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-linen rounded-lg p-3">
+      <p className="text-xs text-ink/40">{label}</p>
+      <p className="text-base font-semibold text-espresso mt-0.5">{value}</p>
+    </div>
+  )
+}
+
 // ── Toggle helper ────────────────────────────────────────────────────────────
 
 function Toggle({
@@ -223,6 +340,8 @@ export default function ProductsPage() {
       <Nav title="Products" />
 
       <main className="max-w-4xl mx-auto px-4 py-5">
+        <FeesCard />
+
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs text-ink/40">{products.length} products</p>
           <button
