@@ -31,7 +31,7 @@ jobs:
 
       - name: Build
         env:
-          VITE_API_BASE_URL: https://dietswad-api.azurewebsites.net/api
+          VITE_API_BASE_URL: https://api.dietswad.in/api
           VITE_VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
         run: npm run build
 

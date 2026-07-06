@@ -24,7 +24,7 @@ setCatchHandler(async ({ request }) => {
 
 registerRoute(
   ({ url }) =>
-    url.origin === 'https://dietswad-api.azurewebsites.net' &&
+    url.origin === 'https://api.dietswad.in' &&
     url.pathname.startsWith('/api/'),
   new NetworkFirst({
     cacheName: 'api-cache',

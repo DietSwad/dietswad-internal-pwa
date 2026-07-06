@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: Settings = {
     offline:   { websiteUrl: '', orderFormUrl: '' },
     direct:    { websiteUrl: '', orderFormUrl: '' },
   },
-  shortenerApiBaseUrl: 'https://dietswad-api.azurewebsites.net/api',
+  shortenerApiBaseUrl: 'https://api.dietswad.in/api',
   pushEnabled: false,
 }
 

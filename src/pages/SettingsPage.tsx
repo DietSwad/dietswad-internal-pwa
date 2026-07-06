@@ -137,7 +137,7 @@ export default function SettingsPage() {
           <h3 className="text-sm font-bold text-ink">§4 URL Shortener API</h3>
           <div>
             <label className="text-xs text-ink/50 block mb-1">API Base URL</label>
-            <input value={settings.shortenerApiBaseUrl} onChange={(e) => update('shortenerApiBaseUrl', e.target.value)} className={fieldCls('shortenerApiBaseUrl')} placeholder="https://dietswad-api.azurewebsites.net/api" />
+            <input value={settings.shortenerApiBaseUrl} onChange={(e) => update('shortenerApiBaseUrl', e.target.value)} className={fieldCls('shortenerApiBaseUrl')} placeholder="https://api.dietswad.in/api" />
           </div>
           <p className="text-xs text-ink/40">Auth is handled by JWT — no API key needed.</p>
         </section>
@@ -173,7 +173,7 @@ export default function SettingsPage() {
             ['Version', `v${APP_VERSION}`],
             ['Company', 'Radiant Twins Enterprise'],
             ['Contact', '+91 8910725854'],
-            ['Backend', 'dietswad-api.azurewebsites.net'],
+            ['Backend', 'api.dietswad.in'],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between text-sm">
               <span className="text-ink/50">{label}</span>

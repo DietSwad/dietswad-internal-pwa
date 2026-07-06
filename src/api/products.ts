@@ -2,7 +2,7 @@ import axios from 'axios'
 import { apiClient } from './client'
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://dietswad-api.azurewebsites.net/api'
+  import.meta.env.VITE_API_BASE_URL || 'https://api.dietswad.in/api'
 
 export interface Product {
   name: string
