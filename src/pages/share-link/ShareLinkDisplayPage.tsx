@@ -115,7 +115,7 @@ export default function ShareLinkDisplayPage() {
           <p className="text-xs text-ink/60">
             UTMs applied: <code className="font-mono">utm_source={channel.utmSource}</code>,{' '}
             <code className="font-mono">utm_medium={channel.utmMedium}</code>,{' '}
-            <code className="font-mono">utm_campaign=share_{channel.id}</code>
+            <code className="font-mono">utm_campaign={channel.utmCampaign}</code>
           </p>
         </div>
 

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import Nav from '../components/Nav'
+import { SHORTENER_CHANNELS, type ChannelGroup } from '../utils/channels'
 
 interface Channel {
   group: string
@@ -11,25 +12,24 @@ interface Channel {
   notes?: string
 }
 
-const CHANNELS: Channel[] = [
-  // Broadcast / public post
-  { group: 'Broadcast', label: 'Instagram Bio',           source: 'instagram', medium: 'bio',         campaign: 'bio_instagram',         notes: '@dietswad bio link' },
-  { group: 'Broadcast', label: 'Instagram Story',         source: 'instagram', medium: 'story',       campaign: 'story_instagram'        },
-  { group: 'Broadcast', label: 'Google Business Profile', source: 'google',    medium: 'gmb',         campaign: 'gmb_google',            notes: 'GMB listing website link' },
-  { group: 'Broadcast', label: 'WhatsApp (menu/broadcast)',source: 'whatsapp', medium: 'menu',        campaign: 'menu_whatsapp',         notes: 'WA Business catalog link' },
-  { group: 'Broadcast', label: 'Facebook Page',           source: 'facebook',  medium: 'page',        campaign: 'page_facebook'          },
-  { group: 'Broadcast', label: 'Email Signature',         source: 'email',     medium: 'signature',   campaign: 'signature_email'        },
-  { group: 'Broadcast', label: 'YouTube Description',     source: 'youtube',   medium: 'description', campaign: 'description_youtube'    },
-  { group: 'Broadcast', label: 'Offline / In-Person',     source: 'offline',   medium: 'inperson',    campaign: 'inperson_offline',      notes: 'Printed QR, business cards' },
-  // 1-to-1 share
-  { group: '1-to-1 Share', label: 'Instagram DM',         source: 'instagram', medium: 'dm',          campaign: 'share_instagram'        },
-  { group: '1-to-1 Share', label: 'Facebook Messenger',   source: 'facebook',  medium: 'messenger',   campaign: 'share_facebook'         },
-  { group: '1-to-1 Share', label: 'WhatsApp Chat',         source: 'whatsapp',  medium: 'chat',        campaign: 'share_whatsapp'         },
-  { group: '1-to-1 Share', label: 'Direct / Other',        source: 'direct',    medium: 'other',       campaign: 'share_direct'           },
-  // Manual order flows
-  { group: 'Manual Order', label: 'Manual Order — Instagram', source: 'instagram', medium: 'dm',    campaign: 'order_instagram' },
-  { group: 'Manual Order', label: 'Manual Order — WhatsApp',  source: 'whatsapp',  medium: 'chat',  campaign: 'order_whatsapp'  },
-]
+// Derived from SHORTENER_CHANNELS (utils/channels.ts) — the single source of truth for channel
+// identity. This page is the team's read-only reference; when it was a hand-maintained second
+// copy it could silently drift from the links the shortener actually produces, so staff would be
+// documenting one thing while the tool emitted another. Now it cannot.
+const GROUP_LABEL: Record<ChannelGroup, string> = {
+  broadcast: 'Broadcast',
+  share: '1-to-1 Share',
+  order: 'Manual Order',
+}
+
+const CHANNELS: Channel[] = SHORTENER_CHANNELS.map((c) => ({
+  group: GROUP_LABEL[c.group],
+  label: c.label,
+  source: c.utm_source,
+  medium: c.utm_medium,
+  campaign: c.default_campaign,
+  notes: c.note,
+}))
 
 const GROUPS = ['Broadcast', '1-to-1 Share', 'Manual Order'] as const
 
