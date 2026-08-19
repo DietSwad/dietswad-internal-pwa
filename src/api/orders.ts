@@ -35,6 +35,11 @@ export interface FlatOrder {
   rtoReason: string
   rtoShippingCost: number
   rtoTrackingId: string
+  // Attribution — where the order came from. Written by the backend on every order;
+  // was previously dropped by flattenOrder, so no PWA screen could show it.
+  customerSource: string
+  customerMedium: string
+  customerCampaign: string
 }
 
 export interface OrderFilters {
@@ -87,6 +92,9 @@ export function flattenOrder(page: Record<string, unknown>): FlatOrder {
     rtoReason: (props['RTO Reason'] as { select?: { name: string } })?.select?.name ?? '',
     rtoShippingCost: (props['RTO Shipping Cost'] as { number?: number })?.number ?? 0,
     rtoTrackingId: rt(props, 'RTO Tracking ID'),
+    customerSource: rt(props, 'Customer Source'),
+    customerMedium: rt(props, 'Customer Medium'),
+    customerCampaign: rt(props, 'Customer Campaign'),
   }
 }
 

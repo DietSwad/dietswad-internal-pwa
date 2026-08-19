@@ -338,6 +338,13 @@ export default function OrderDetailPage() {
                   <p className="text-xs text-ink/50 mt-1">Invoice: {order.invoiceNumber}</p>
                 )}
                 <p className="text-xs text-ink/40 mt-2">Ordered: {formatDate(order.orderDate)}</p>
+                {order.customerSource && (
+                  <p className="text-xs text-ink/40 mt-1">
+                    Source: {order.customerSource}
+                    {order.customerMedium && ` · ${order.customerMedium}`}
+                    {order.customerCampaign && ` · ${order.customerCampaign}`}
+                  </p>
+                )}
               </>
             ) : (
               <div className="space-y-2">
