@@ -94,22 +94,23 @@ export interface ChannelConfig {
  * screens can never drift apart — that file is the single source of truth for channel identity.
  * Only the id → channel-id mapping and the campaign name live here.
  *
- * ⚠️ `utmCampaign` deliberately still differs from the shortener's `default_campaign` for two
- * channels, preserving existing behaviour:
- *     Google Business   share_google   vs shortener  gmb_google
- *     Offline           share_offline  vs shortener  inperson_offline
- * Same channel, two campaign names, so the Unified dashboard's campaign_attribution splits them
- * into two rows. Left as-is on purpose — renaming changes what is recorded going forward and
- * breaks continuity with existing data, so it is Pritam's call, not a silent code change.
- * See Details/DECISIONS_LOG.md 2026-08-19.
+ * `utmCampaign` is taken from the shortener channel's `default_campaign` so the Share Link screen
+ * and the Shortener screen emit the SAME campaign name for the same channel. Two of them used to
+ * disagree (Google Business `share_google` vs `gmb_google`; Offline `share_offline` vs
+ * `inperson_offline`), which split each channel into two rows in the Unified dashboard's
+ * campaign_attribution. Aligned to the shortener's names on 2026-08-19 by Pritam's decision —
+ * those are the values `UtmSummaryPage` already documents to the team as canonical.
+ *
+ * To add a channel: add it to SHORTENER_CHANNELS in utils/channels.ts, then reference its id here.
+ * Never hardcode a source/medium/campaign in this file.
  */
-const SHARE_CHANNEL_MAP: Array<{ id: string; label: string; shortenerId: string; utmCampaign: string }> = [
-  { id: 'instagram', label: 'Instagram DM',        shortenerId: 'ig-dm',   utmCampaign: 'share_instagram' },
-  { id: 'facebook',  label: 'Facebook Messenger',  shortenerId: 'fb-msg',  utmCampaign: 'share_facebook'  },
-  { id: 'whatsapp',  label: 'WhatsApp Chat',       shortenerId: 'wa-chat', utmCampaign: 'share_whatsapp'  },
-  { id: 'google',    label: 'Google My Business',  shortenerId: 'gmb',     utmCampaign: 'share_google'    },
-  { id: 'offline',   label: 'In-Person / Offline', shortenerId: 'offline', utmCampaign: 'share_offline'   },
-  { id: 'direct',    label: 'Other / General',     shortenerId: 'direct',  utmCampaign: 'share_direct'    },
+const SHARE_CHANNEL_MAP: Array<{ id: string; label: string; shortenerId: string }> = [
+  { id: 'instagram', label: 'Instagram DM',        shortenerId: 'ig-dm'   },
+  { id: 'facebook',  label: 'Facebook Messenger',  shortenerId: 'fb-msg'  },
+  { id: 'whatsapp',  label: 'WhatsApp Chat',       shortenerId: 'wa-chat' },
+  { id: 'google',    label: 'Google My Business',  shortenerId: 'gmb'     },
+  { id: 'offline',   label: 'In-Person / Offline', shortenerId: 'offline' },
+  { id: 'direct',    label: 'Other / General',     shortenerId: 'direct'  },
 ]
 
 export const SHARE_CHANNELS: ChannelConfig[] = SHARE_CHANNEL_MAP.map((m) => {
@@ -120,7 +121,7 @@ export const SHARE_CHANNELS: ChannelConfig[] = SHARE_CHANNEL_MAP.map((m) => {
     label: m.label,
     utmSource: src.utm_source,
     utmMedium: src.utm_medium,
-    utmCampaign: m.utmCampaign,
+    utmCampaign: src.default_campaign,
   }
 })
 
