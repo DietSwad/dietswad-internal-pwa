@@ -178,12 +178,41 @@ interface BatchResult {
   error?: string
 }
 
+/**
+ * Split one CSV line into fields, honouring double-quoted values so an address may
+ * contain commas:  Asha,9830000000,Power Bites,3,"12 MG Road, Salt Lake",700091,1497
+ * A doubled quote ("") inside a quoted field is an escaped literal quote.
+ */
+function splitCsvLine(line: string): string[] {
+  const out: string[] = []
+  let cur = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (inQuotes) {
+      if (ch !== '"') { cur += ch }
+      else if (line[i + 1] === '"') { cur += '"'; i++ }   // escaped ""
+      else { inQuotes = false }
+    } else if (ch === '"') {
+      inQuotes = true
+    } else if (ch === ',') {
+      out.push(cur); cur = ''
+    } else {
+      cur += ch
+    }
+  }
+  out.push(cur)
+  return out.map((p) => p.trim())
+}
+
 function CsvBatchTab() {
   const toast = useToast()
   const createOrder = useCreateManualOrder()
   const [csvText, setCsvText] = useState('')
   const [parsed, setParsed] = useState<CsvRow[] | null>(null)
   const [parseErrors, setParseErrors] = useState<string[]>([])
+  const [parseWarnings, setParseWarnings] = useState<string[]>([])
   const [results, setResults] = useState<BatchResult[] | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -204,14 +233,40 @@ function CsvBatchTab() {
 
     const rows: CsvRow[] = []
     const errs: string[] = []
+    const warns: string[] = []
 
     for (let i = 0; i < lines.length; i++) {
-      const parts = lines[i].split(',').map((p) => p.trim())
+      const parts = splitCsvLine(lines[i])
       if (parts.length < 7) { errs.push(`Row ${i + 1}: not enough columns`); continue }
-      const raw = { name: parts[0], phone: parts[1], product: parts[2], qty: parts[3], address: parts[4], pincode: parts[5], amount: parts[6] }
+
+      // An UNQUOTED address containing commas produces extra fields. The first four
+      // (name, phone, product, qty) and the last two (pincode, amount) are fixed, so
+      // everything between them is the address. Quoted addresses already arrive as one
+      // field and fall through this untouched.
+      const address =
+        parts.length === 7 ? parts[4] : parts.slice(4, parts.length - 2).join(', ')
+
+      const raw = {
+        name:    parts[0],
+        phone:   parts[1],
+        product: parts[2],
+        qty:     parts[3],
+        address,
+        pincode: parts[parts.length - 2],
+        amount:  parts[parts.length - 1],
+      }
       const result = CsvRowSchema.safeParse(raw)
       if (result.success) {
         rows.push(result.data)
+        // amount is the line TOTAL. If it doesn't divide evenly by qty the unit price is
+        // fractional, so the invoice's line total can't reconcile exactly to the amount
+        // charged. Warn (don't block) — a distributor lump sum is a legitimate case.
+        if (result.data.amount % result.data.qty !== 0) {
+          const unit = (result.data.amount / result.data.qty).toFixed(2)
+          warns.push(
+            `Row ${i + 1} (${result.data.name}): ${formatINR(result.data.amount)} ÷ ${result.data.qty} = ₹${unit} per unit — doesn't divide evenly, invoice may be off by up to ₹1.`
+          )
+        }
       } else {
         errs.push(`Row ${i + 1}: ${result.error.issues.map((e) => e.message).join(', ')}`)
       }
@@ -219,6 +274,7 @@ function CsvBatchTab() {
 
     setParsed(rows.length > 0 ? rows : null)
     setParseErrors(errs)
+    setParseWarnings(warns)
     setResults(null)
   }
 
@@ -234,7 +290,14 @@ function CsvBatchTab() {
           phone: row.phone,
           address: row.address,
           pincode: row.pincode,
-          items: [{ product: row.product, quantity: row.qty, unit_price: row.amount / row.qty }],
+          // Round to paise. A raw divide can yield 166.33333333333334, which is written
+          // verbatim into the Notion notes line and then has to be parsed back out by the
+          // invoice worker — keep it to 2 dp so both ends agree.
+          items: [{
+            product: row.product,
+            quantity: row.qty,
+            unit_price: Math.round((row.amount / row.qty) * 100) / 100,
+          }],
           total_amount: row.amount,
           order_type: 'Distributor',
           payment_method: 'Bank Transfer',
@@ -259,6 +322,11 @@ function CsvBatchTab() {
         <h3 className="text-xs font-semibold text-ink/50 uppercase tracking-wide">CSV Format</h3>
         <p className="text-xs text-ink/50 font-mono bg-linen border border-surface rounded-lg p-2">
           name,phone,product,qty,address,pincode,amount
+        </p>
+        <p className="text-xs text-ink/40">
+          Addresses with commas are fine — either wrap them in quotes
+          (<span className="font-mono">"12 MG Road, Salt Lake"</span>) or just paste them as-is.
+          <span className="font-mono"> amount</span> is the total for the row, not the unit price.
         </p>
         <div className="flex gap-2">
           <button
@@ -293,6 +361,19 @@ function CsvBatchTab() {
           <ul className="space-y-1">
             {parseErrors.map((e, i) => (
               <li key={i} className="text-xs text-red-600">{e}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {parseWarnings.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-xs font-semibold text-amber-800 mb-2">
+            Check these ({parseWarnings.length}) — they will still submit
+          </p>
+          <ul className="space-y-1">
+            {parseWarnings.map((w, i) => (
+              <li key={i} className="text-xs text-amber-700">{w}</li>
             ))}
           </ul>
         </div>
@@ -375,7 +456,10 @@ function CsvBatchTab() {
             </table>
           </div>
           <div className="p-4 border-t border-surface">
-            <button onClick={() => { setParsed(null); setResults(null); setCsvText('') }} className="text-sm text-espresso underline">
+            <button
+              onClick={() => { setParsed(null); setResults(null); setCsvText(''); setParseErrors([]); setParseWarnings([]) }}
+              className="text-sm text-espresso underline"
+            >
               Start new batch
             </button>
           </div>
