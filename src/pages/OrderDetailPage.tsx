@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Edit3, Send, Download, Phone, CheckCircle, AlertTriangle } from 'lucide-react'
 import Nav from '../components/Nav'
 import StatusBadge from '../components/StatusBadge'
 import RtoLogModal from '../components/RtoLogModal'
-import { useOrdersList, useUpdateOrder, useSendInvoice, useDownloadInvoice, useMarkDelivered, useMarkRto } from '../hooks/useOrders'
+import { useOrder, useUpdateOrder, useSendInvoice, useDownloadInvoice, useMarkDelivered, useMarkRto } from '../hooks/useOrders'
 import { useToast } from '../components/ToastProvider'
 import { formatINR, formatDate, formatPhone } from '../utils/format'
 import type { RtoLogFormValues } from '../utils/zodSchemas'
@@ -31,8 +31,9 @@ export default function OrderDetailPage() {
   const [editMode, setEditMode] = useState(false)
   const [rtoModalOpen, setRtoModalOpen] = useState(false)
 
-  const { data: orders = [], isLoading } = useOrdersList({})
-  const order = useMemo(() => orders.find((o) => o.pageId === pageId), [orders, pageId])
+  // Fetch this one order directly. Searching useOrdersList({}) only covered the latest 50,
+  // so Slack / push / email links to older orders showed "Order not found".
+  const { data: order, isLoading } = useOrder(pageId)
 
   const updateOrderMut  = useUpdateOrder()
   const sendInvoiceMut  = useSendInvoice()

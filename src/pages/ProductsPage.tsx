@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Plus, Edit3, X, Check } from 'lucide-react'
 import Nav from '../components/Nav'
-import { useProducts, useUpdateProduct, useCreateProduct } from '../hooks/useProducts'
+import { useAdminProducts, useUpdateProduct, useCreateProduct } from '../hooks/useProducts'
 import { useFees, useUpdateFees } from '../hooks/useFees'
 import { useToast } from '../components/ToastProvider'
 import { formatINR } from '../utils/format'
-import type { Product } from '../api/products'
+import type { AdminProduct } from '../api/products'
 
 // ── Edit drawer ──────────────────────────────────────────────────────────────
 
@@ -13,14 +13,14 @@ function EditDrawer({
   product,
   onClose,
 }: {
-  product: Product
+  product: AdminProduct
   onClose: () => void
 }) {
   const toast = useToast()
   const updateProduct = useUpdateProduct()
   const [price, setPrice] = useState(String(product.price))
-  const [isActive, setIsActive] = useState(product.IsActive)
-  const [showOnWebsite, setShowOnWebsite] = useState(product.ShowOnWebsite)
+  const [isActive, setIsActive] = useState(product.is_active)
+  const [showOnWebsite, setShowOnWebsite] = useState(product.show_on_website)
 
   async function handleSave() {
     const parsedPrice = parseFloat(price)
@@ -32,8 +32,8 @@ function EditDrawer({
       await updateProduct.mutateAsync({
         name: product.name,
         price: parsedPrice,
-        IsActive: isActive,
-        ShowOnWebsite: showOnWebsite,
+        is_active: isActive,
+        show_on_website: showOnWebsite,
       })
       toast.success(`${product.name} updated`)
       onClose()
@@ -108,8 +108,8 @@ function NewProductForm({ onClose }: { onClose: () => void }) {
         name: name.trim(),
         price: parsedPrice,
         display_order: displayOrder ? parseInt(displayOrder) : undefined,
-        IsActive: isActive,
-        ShowOnWebsite: showOnWebsite,
+        is_active: isActive,
+        show_on_website: showOnWebsite,
       })
       toast.success(`${name.trim()} added`)
       onClose()
@@ -329,8 +329,8 @@ function Toggle({
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export default function ProductsPage() {
-  const { data: products = [], isLoading, isError } = useProducts()
-  const [editing, setEditing] = useState<Product | null>(null)
+  const { data: products = [], isLoading, isError } = useAdminProducts()
+  const [editing, setEditing] = useState<AdminProduct | null>(null)
   const [showNew, setShowNew] = useState(false)
 
   const sorted = [...products].sort((a, b) => a.display_order - b.display_order)
@@ -377,7 +377,7 @@ export default function ProductsPage() {
                       <td className="px-3 py-2.5 text-xs text-ink/30">{p.display_order}</td>
                       <td className="px-3 py-2.5 font-medium text-ink">
                         {p.name}
-                        {p.IsLegacy && (
+                        {p.is_legacy && (
                           <span className="ml-2 text-xs bg-surface text-ink/40 px-1.5 py-0.5 rounded">Legacy</span>
                         )}
                       </td>
@@ -385,10 +385,10 @@ export default function ProductsPage() {
                         {p.price > 0 ? formatINR(p.price) : <span className="text-ink/30">—</span>}
                       </td>
                       <td className="px-3 py-2.5">
-                        <StatusDot on={p.IsActive} />
+                        <StatusDot on={p.is_active} />
                       </td>
                       <td className="px-3 py-2.5">
-                        <StatusDot on={p.ShowOnWebsite} />
+                        <StatusDot on={p.show_on_website} />
                       </td>
                       <td className="px-3 py-2.5">
                         <button
@@ -414,7 +414,7 @@ export default function ProductsPage() {
                   <div className="min-w-0">
                     <p className="font-medium text-ink truncate">
                       {p.name}
-                      {p.IsLegacy && (
+                      {p.is_legacy && (
                         <span className="ml-2 text-xs bg-surface text-ink/40 px-1.5 py-0.5 rounded">Legacy</span>
                       )}
                     </p>
@@ -422,10 +422,10 @@ export default function ProductsPage() {
                       <span className="text-sm font-semibold text-espresso">
                         {p.price > 0 ? formatINR(p.price) : '—'}
                       </span>
-                      <span className={`text-xs ${p.IsActive ? 'text-green-600' : 'text-ink/30'}`}>
-                        {p.IsActive ? 'Active' : 'Inactive'}
+                      <span className={`text-xs ${p.is_active ? 'text-green-600' : 'text-ink/30'}`}>
+                        {p.is_active ? 'Active' : 'Inactive'}
                       </span>
-                      {p.ShowOnWebsite && (
+                      {p.show_on_website && (
                         <span className="text-xs text-blue-600">Web</span>
                       )}
                     </div>

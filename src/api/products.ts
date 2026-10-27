@@ -4,32 +4,44 @@ import { apiClient } from './client'
 const API_BASE =
   import.meta.env.VITE_API_BASE_URL || 'https://api.dietswad.in/api'
 
+/** Active products for order-form pickers (`channel=app`): name, price, display_order only. */
 export interface Product {
   name: string
   price: number
   display_order: number
-  IsActive: boolean
-  ShowOnWebsite: boolean
-  IsLegacy: boolean
 }
 
+/** Every product, including inactive ones, with the flags the Products screen edits (`channel=admin`). */
+export interface AdminProduct extends Product {
+  is_active: boolean
+  show_on_website: boolean
+  is_legacy: boolean
+}
+
+// Field names match what /manage/products reads. These used to be IsActive/ShowOnWebsite,
+// which the backend never read, so the toggles silently did nothing.
 export interface UpdateProductPayload {
   name: string
   price?: number
-  IsActive?: boolean
-  ShowOnWebsite?: boolean
+  is_active?: boolean
+  show_on_website?: boolean
 }
 
 export interface CreateProductPayload {
   name: string
   price: number
   display_order?: number
-  IsActive?: boolean
-  ShowOnWebsite?: boolean
+  is_active?: boolean
+  show_on_website?: boolean
 }
 
 export async function getProducts(): Promise<Product[]> {
   const { data } = await axios.get<Product[]>(`${API_BASE}/products?channel=app`)
+  return data
+}
+
+export async function getAdminProducts(): Promise<AdminProduct[]> {
+  const { data } = await axios.get<AdminProduct[]>(`${API_BASE}/products?channel=admin`)
   return data
 }
 

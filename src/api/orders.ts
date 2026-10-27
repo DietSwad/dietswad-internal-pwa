@@ -116,6 +116,12 @@ export async function getOrders(filters: OrderFilters = {}): Promise<FlatOrder[]
   return data.results.map(flattenOrder)
 }
 
+/** One order by Notion page id — not limited to the latest 50 like getOrders(). */
+export async function getOrder(pageId: string): Promise<FlatOrder> {
+  const { data } = await apiClient.get<Record<string, unknown>>(`/orders/${pageId}`)
+  return flattenOrder(data)
+}
+
 export interface UpdateOrderPayload {
   page_id: string
   updates: Record<string, string | number>

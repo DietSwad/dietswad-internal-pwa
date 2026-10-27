@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getOrders,
+  getOrder,
   updateOrder,
   createManualOrder,
   sendInvoice,
@@ -21,18 +22,34 @@ export function useOrdersList(filters: OrderFilters = {}) {
   })
 }
 
+/** Single order. Key sits under ['orders'] so every existing invalidateQueries(['orders'])
+ *  after an edit / delivery / RTO also refreshes the detail screen. Seeded from any list
+ *  already in cache so recent orders still open instantly. */
+export function useOrder(pageId: string | undefined) {
+  const qc = useQueryClient()
+  return useQuery({
+    queryKey: ['orders', 'detail', pageId],
+    queryFn: () => getOrder(pageId as string),
+    enabled: !!pageId,
+    initialData: () => {
+      for (const [, list] of qc.getQueriesData<FlatOrder[]>({ queryKey: ['orders'] })) {
+        const hit = Array.isArray(list) ? list.find((o) => o.pageId === pageId) : undefined
+        if (hit) return hit
+      }
+      return undefined
+    },
+  })
+}
+
 export function useUpdateOrder() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: updateOrder,
     onMutate: async (payload: UpdateOrderPayload) => {
       await qc.cancelQueries({ queryKey: ['orders'] })
-      const snapshots = qc.getQueriesData<FlatOrder[]>({ queryKey: ['orders'] })
+      const snapshots = qc.getQueriesData<FlatOrder[] | FlatOrder>({ queryKey: ['orders'] })
 
-      qc.setQueriesData<FlatOrder[]>({ queryKey: ['orders'] }, (old) => {
-        if (!old) return old
-        return old.map((o) => {
-          if (o.pageId !== payload.page_id) return o
+      const applyUpdates = (o: FlatOrder): FlatOrder => {
           const u = payload.updates
           return {
             ...o,
@@ -46,7 +63,14 @@ export function useUpdateOrder() {
             ...('Payment Reference' in u? { paymentReference: String(u['Payment Reference']) } : {}),
             ...('Total Amount' in u    ? { amount: Number(u['Total Amount']) }            : {}),
           }
-        })
+      }
+
+      // ['orders'] holds both lists (FlatOrder[]) and single-order detail entries (FlatOrder),
+      // so patch either shape. The list-only version called .map() on the detail object and threw.
+      qc.setQueriesData<FlatOrder[] | FlatOrder>({ queryKey: ['orders'] }, (old) => {
+        if (!old) return old
+        if (!Array.isArray(old)) return old.pageId === payload.page_id ? applyUpdates(old) : old
+        return old.map((o) => (o.pageId === payload.page_id ? applyUpdates(o) : o))
       })
       return { snapshots }
     },
